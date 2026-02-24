@@ -5,6 +5,36 @@ export interface Amenity {
     icon: React.ReactNode;
 }
 
+export interface User {
+    id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    properties?: Listing[];
+    access_token?: string;
+    refresh_token?: string;
+    profile?: Profile
+    bookings?: Booking[]
+}
+
+export interface Profile {
+    user: User;
+    role: "buyer" | "seller";
+    phone: string
+    address: string
+}
+
+export interface Booking {
+    id: string;
+    user: User;
+    property: Listing;
+    start_date: string;
+    end_date: string;
+    guests: number;
+    created_at: string;
+    total_price: number;
+}
+
 export interface Listing {
     id: string;
     name: string;
@@ -24,6 +54,9 @@ export interface Listing {
     reviewCount?: number;
     cleaningFee?: number;
     serviceFee?: number;
+    tags?: string;
+    owner?: Profile;
+    bookings?: Booking[]
 }
 
 export interface LocationCategory {
@@ -45,6 +78,7 @@ export const amenities: Record<string, Amenity> = {
     ac: {name:"Air Conditioner", icon: <AirVentIcon size={20} />}
 };
 
+// this was mock data
 export const locationCategories: LocationCategory[] = [
     { id: 'banjul', name: 'Banjul', imageUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500' },
     { id: 'kololi', name: 'Kololi', imageUrl: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=500' },
@@ -149,8 +183,6 @@ export class DataLoader {
        }
     }
 
-      
-
     getLocationCategories(limit=10): LocationCategory[] {
         return locationCategories.slice(0, limit);
     }
@@ -176,10 +208,10 @@ export class DataLoader {
         // return amenities;
     }
 
-    async getListingById(id: string,access_token: string) {
+    async getListingById(id: string,access_token: string): Promise<Listing> {
         const response = await Api.get(`/properties/?id=${id}`,{headers: {'Authorization': `Token ${access_token}`}})
         console.log('single property')
-        return response.data[0]
+        return response.data[0] as Listing
     }
 
     getLocationCategoryById(id: string): LocationCategory | undefined {
@@ -196,5 +228,11 @@ export class DataLoader {
 
     getListingsByAmenity(amenity: string): Listing[] {
         return listings.filter(listing => listing.amenities.includes(amenities[amenity]));
+    }
+
+    async bookListing(listing: Listing, start_date: string, end_date: string, guests: number, total_price: number,acess_token: string): Promise<Boolean> {
+        const booking = {id:listing.id, start_date, end_date, guests, total_price };
+        const response = await Api.post('/booking/', booking,{headers: {'Authorization': `Token ${acess_token}`}});
+        return response.status === 201 || response.status === 200
     }
 }

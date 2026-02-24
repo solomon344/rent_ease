@@ -43,6 +43,7 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
                   {listing.isSuperhost && <Badge color="primary" className="ml-2">Superhost</Badge>}
                   {listing.hostExperience && ` • ${listing.hostExperience} years hosting`}
                 </p>
+               
               </div>
             </div>
 
@@ -71,6 +72,10 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
             <div>
               <h2 className="text-xl font-semibold mb-2">About this place</h2>
               <p className="text-gray-700">{listing.description}</p>
+              <br />
+               <p>
+                  {listing?.bookings?.length} {listing?.bookings?.length === 1 ? 'booking' : 'bookings'}
+                </p>
             </div>
 
             <Divider />
