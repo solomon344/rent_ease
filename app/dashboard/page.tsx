@@ -1,632 +1,273 @@
 'use client'
-import React from 'react'
-import { Button } from '@heroui/button'
-import { Card, CardBody, CardHeader } from '@heroui/card'
-import { Input } from '@heroui/input'
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@heroui/table'
-import { Badge } from '@heroui/badge'
-import { Avatar } from '@heroui/avatar'
-import {
-  Plus,
-  Edit,
-  Trash2,
-  Search,
-  BarChart3,
-  Home,
-  Users,
-  DollarSign,
-  Eye,
-  Calendar,
-  CheckCircle,
-  XCircle,
-  Clock,
-  Settings,
-  LogOut,
-  Menu,
-  X
-} from 'lucide-react'
-// import { listings } from '@/data/listings'
-import { Image } from '@heroui/image'
+import React, { useState } from 'react'
 import Link from 'next/link'
-import Api from '@/lib/api'
 import { useSession } from 'next-auth/react'
+import Api from '@/lib/api'
+import { Booking, DataLoader } from '@/data/listings'
+import { addToast } from '@heroui/toast'
+import {
+  Home,
+  DollarSign,
+  BarChart3,
+  Calendar,
+  Plus,
+  ArrowUpRight,
+  TrendingUp,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  ChevronRight,
+  Building2,
+} from 'lucide-react'
+import { Button } from '@heroui/button'
+import { Chip } from '@heroui/chip'
+import { Avatar } from '@heroui/avatar'
+import type { CustomSession } from '@/types'
 
-// Mock reservation data
-const mockReservations = [
-  {
-    id: '1',
-    propertyName: 'Luxury Beachfront Villa',
-    guestName: 'Sarah Johnson',
-    guestEmail: 'sarah.j@email.com',
-    checkIn: '2025-01-15',
-    checkOut: '2025-01-20',
-    guests: 4,
-    totalAmount: 1250,
-    status: 'pending',
-    createdAt: '2025-12-20',
-    propertyImage: 'https://images.unsplash.com/photo-1512917774080-9b466afb86d2?w=100'
-  },
-  {
-    id: '2',
-    propertyName: 'Cozy Apartment Banjul',
-    guestName: 'Michael Chen',
-    guestEmail: 'm.chen@email.com',
-    checkIn: '2025-01-10',
-    checkOut: '2025-01-12',
-    guests: 2,
-    totalAmount: 1600,
-    status: 'confirmed',
-    createdAt: '2025-12-18',
-    propertyImage: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=100'
-  },
-  {
-    id: '3',
-    propertyName: 'Serekunda Family Home',
-    guestName: 'Emma Wilson',
-    guestEmail: 'emma.w@email.com',
-    checkIn: '2025-02-01',
-    checkOut: '2025-02-05',
-    guests: 6,
-    totalAmount: 2400,
-    status: 'pending',
-    createdAt: '2025-12-19',
-    propertyImage: 'https://images.unsplash.com/photo-1516156537038-3effa189fdf3?w=100'
-  },
-  {
-    id: '4',
-    propertyName: 'Kololi Beach Resort',
-    guestName: 'David Brown',
-    guestEmail: 'd.brown@email.com',
-    checkIn: '2025-01-25',
-    checkOut: '2025-01-30',
-    guests: 8,
-    totalAmount: 15000,
-    status: 'declined',
-    createdAt: '2025-12-15',
-    propertyImage: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=100'
-  }
-]
-
-const Dashboard = () => {
-  const [activeSection, setActiveSection] = React.useState('overview')
-  const [searchTerm, setSearchTerm] = React.useState('')
-  const [listings,setListings] = React.useState<any[]>([])
-  const [filteredListings, setFilteredListings] = React.useState(listings)
-  const [sidebarOpen, setSidebarOpen] = React.useState(false)
-
-
-  const { data: session } = useSession()
-
-
-  React.useEffect(()=>{
-    // @ts-ignore
-    Api.get(`/properties/?owner__user__email=${session?.user?.email}`,{headers:{'Authorization': `Token ${session?.user?.access}`}}).then(res=>setListings(res.data))
-  },[session])
+export default function OverviewPage() {
+  const { data: session }: { data: CustomSession | null } = useSession()
+  const [listings, setListings] = React.useState<any[]>([])
+  const [reservations, setReservations] = React.useState<Booking[]>([])
 
   React.useEffect(() => {
-    const filtered = listings.filter((listing:any) =>
-      listing.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      listing.location.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    setFilteredListings(filtered)
-  }, [searchTerm])
+  
+    // @ts-ignore
+   if (session?.user?.djangoAccess){
+     Api.get(`/properties/?owner__user__email=${session?.user?.email}`, { headers: { Authorization: `Token ${session?.user?.djangoAccess}` } }).then(res => setListings(res.data))
+    // @ts-ignore
+    Api.get(`/booking/?property__owner__email=${session?.user?.email}`, { headers: { Authorization: `Token ${session?.user?.djangoAccess}` } }).then(res => setReservations(res.data))
+   }
+  }, [session?.user?.djangoAccess])
 
   const totalProperties = listings.length
-  const totalRevenue = listings.reduce((sum, listing) => sum + listing.price, 0)
-  const averageRating = listings.reduce((sum, listing) => sum + (listing.rating || 0), 0) / listings.length
-  const pendingReservations = mockReservations.filter(r => r.status === 'pending').length
+  const pendingReservations = reservations.filter(r => r.status === 'pending').length
+  const confirmedReservations = reservations.filter(r => r.status === 'confirmed').length
+  const totalRevenue = reservations
+    .filter(r => r.status === 'confirmed')
+    .reduce((sum, r) => sum + Number(r.total_price || 0), 0)
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 0,
+    }).format(value)
 
-  const handleReservationAction = (reservationId: string, action: 'accept' | 'decline') => {
-    // In a real app, this would make an API call
-    console.log(`${action} reservation ${reservationId}`)
-    // For demo purposes, we'll just show an alert
-    alert(`Reservation ${action}ed successfully!`)
-  }
-
-  const sidebarItems = [
-    { id: 'overview', label: 'Overview', icon: Home, badge: null },
-    { id: 'properties', label: 'Properties', icon: Home, badge: null },
-    { id: 'reservations', label: 'Reservations', icon: Calendar, badge: pendingReservations },
-    // { id: 'analytics', label: 'Analytics', icon: BarChart3, badge: null },
-    // { id: 'settings', label: 'Settings', icon: Settings, badge: null }
+  const statCards = [
+    {
+      label: 'Total Properties',
+      value: totalProperties,
+      icon: Building2,
+      gradient: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+      bg: 'rgba(99,102,241,0.08)',
+      border: 'rgba(99,102,241,0.2)',
+      change: '+2 this month',
+    },
+    {
+      label: 'Pending Bookings',
+      value: pendingReservations,
+      icon: Clock,
+      gradient: 'linear-gradient(135deg, #f59e0b, #f97316)',
+      bg: 'rgba(245,158,11,0.08)',
+      border: 'rgba(245,158,11,0.2)',
+      change: 'Needs review',
+    },
+    {
+      label: 'Confirmed Bookings',
+      value: confirmedReservations,
+      icon: CheckCircle2,
+      gradient: 'linear-gradient(135deg, #10b981, #059669)',
+      bg: 'rgba(16,185,129,0.08)',
+      border: 'rgba(16,185,129,0.2)',
+      change: 'All time',
+    },
+    {
+      label: 'Est. Revenue',
+      value: formatCurrency(totalRevenue),
+      icon: DollarSign,
+      gradient: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+      bg: 'rgba(59,130,246,0.08)',
+      border: 'rgba(59,130,246,0.2)',
+      change: 'Analytics coming',
+    },
   ]
 
-  const renderSidebar = () => (
-    <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
-      <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
-        <h2 className="text-xl font-bold text-gray-900">RentEase</h2>
-        <Button
-          variant="light"
-          isIconOnly
-          className="lg:hidden"
-          onPress={() => setSidebarOpen(false)}
-        >
-          <X size={20} />
-        </Button>
-      </div>
-
-      <nav className="mt-8 px-4 h-fit">
-        <div className="space-y-2">
-          {sidebarItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                setActiveSection(item.id)
-                setSidebarOpen(false)
-              }}
-              className={`w-full flex items-center justify-between px-4 py-3 text-left rounded-lg transition-colors ${
-                activeSection === item.id
-                  ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                  : 'text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <item.icon size={20} />
-                <span className="font-medium">{item.label}</span>
-              </div>
-              {item.badge && item.badge > 0 && (
-                <Badge color="danger" className="text-xs">
-                  {item.badge}
-                </Badge>
-              )}
-            </button>
-          ))}
-        </div>
-
-        <div className="mt-8 pt-8 border-t border-gray-200">
-          <button className="w-full flex items-center gap-3 px-4 py-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
-            <LogOut size={20} />
-            <span className="font-medium">Logout</span>
-          </button>
-        </div>
-      </nav>
-    </div>
-  )
-
-  const renderOverview = () => (
-    <>
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card className="bg-white shadow-sm">
-          <CardBody className="flex items-center gap-4">
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <Home className="text-blue-600" size={24} />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Total Properties</p>
-              <p className="text-2xl font-bold text-gray-900">{totalProperties}</p>
-            </div>
-          </CardBody>
-        </Card>
-
-        <Card className="bg-white shadow-sm">
-          <CardBody className="flex items-center gap-4">
-            <div className="p-3 bg-green-100 rounded-lg">
-              <DollarSign className="text-green-600" size={24} />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Total Revenue</p>
-              <p className="text-2xl font-bold text-gray-900">(Coming Soon)</p>
-            </div>
-          </CardBody>
-        </Card>
-
-        <Card className="bg-white shadow-sm">
-          <CardBody className="flex items-center gap-4">
-            <div className="p-3 bg-yellow-100 rounded-lg">
-              <BarChart3 className="text-yellow-600" size={24} />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Avg Rating</p>
-              <p className="text-2xl font-bold text-gray-900">(Coming Soon)</p>
-            </div>
-          </CardBody>
-        </Card>
-
-        <Card className="bg-white shadow-sm">
-          <CardBody className="flex items-center gap-4">
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <Calendar className="text-purple-600" size={24} />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Pending Reservations</p>
-              <p className="text-2xl font-bold text-gray-900">(Coming Soon)</p>
-            </div>
-          </CardBody>
-        </Card>
-      </div>
-
-      {/* Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card className="bg-white shadow-sm">
-          <CardHeader>
-            <h3 className="text-lg font-semibold text-gray-900">Recent Reservations</h3>
-          </CardHeader>
-          <CardBody>
-            {/* <div className="space-y-4">
-              {mockReservations.slice(0, 3).map((reservation) => (
-                <div key={reservation.id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-                  <Avatar src={reservation.propertyImage} size="sm" />
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900">{reservation.guestName}</p>
-                    <p className="text-sm text-gray-600">{reservation.propertyName}</p>
-                  </div>
-                  <Badge
-                    color={
-                      reservation.status === 'confirmed' ? 'success' :
-                      reservation.status === 'pending' ? 'warning' : 'danger'
-                    }
-                    variant="flat"
-                  >
-                    {reservation.status}
-                  </Badge>
-                </div>
-              ))}
-            </div> */}
-            <h3 className="text-lg font-semibold text-gray-900 w-full text-center">(Coming Soon)</h3>
-          </CardBody>
-        </Card>
-
-        <Card className="bg-white shadow-sm">
-          <CardHeader>
-            <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
-          </CardHeader>
-          <CardBody>
-            <div className="space-y-3">
-              <Button
-                color="primary"
-                startContent={<Plus size={20} />}
-                className="w-full justify-start"
-                as={Link}
-                href="/dashboard/create"
-              >
-                Add New Property
-              </Button>
-              <Button
-                variant="bordered"
-                startContent={<Calendar size={20} />}
-                className="w-full justify-start"
-                isDisabled
-                onPress={() => setActiveSection('reservations')}
-              >
-                Manage Reservations (Coming Soon)
-              </Button>
-              <Button
-                variant="bordered"
-                startContent={<BarChart3 size={20} />}
-                className="w-full justify-start"
-                isDisabled
-                onPress={() => setActiveSection('analytics')}
-              >
-                View Analytics (Coming Soon)
-              </Button>
-            </div>
-          </CardBody>
-        </Card>
-      </div>
-    </>
-  )
-
-  const renderProperties = () => (
-    <>
-      {/* Search and Filters */}
-      <div className="flex gap-4 mb-6">
-        <div className="flex-1">
-          <Input
-            placeholder="Search properties by name or location..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            startContent={<Search size={20} className="text-gray-400" />}
-            className="max-w-md"
-          />
-        </div>
-        <Button variant="bordered" className="border-gray-300">
-          Filter by Location
-        </Button>
-        <Button variant="bordered" className="border-gray-300">
-          Filter by Price
-        </Button>
-      </div>
-
-      {/* Properties Table */}
-      <Card className="bg-white shadow-sm">
-        <CardBody className="p-0">
-          <Table aria-label="Properties table">
-            <TableHeader>
-              <TableColumn>PROPERTY</TableColumn>
-              <TableColumn>LOCATION</TableColumn>
-              <TableColumn>PRICE</TableColumn>
-              <TableColumn>RATING</TableColumn>
-              <TableColumn>GUESTS</TableColumn>
-              <TableColumn>STATUS</TableColumn>
-              <TableColumn>ACTIONS</TableColumn>
-            </TableHeader>
-            <TableBody>
-              {listings.map((listing) => (
-                <TableRow key={listing.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Image
-                        src={listing.image}
-                        alt={listing.name}
-                        width={60}
-                        height={40}
-                        className="object-cover rounded"
-                      />
-                      <div>
-                        <p className="font-medium text-gray-900">{listing.name}</p>
-                        <p className="text-sm text-gray-500 truncate max-w-xs">{listing.description}</p>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className="capitalize">{listing.location}</span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="font-semibold text-blue-600">${listing.price}</span>
-                  </TableCell>
-                  <TableCell>
-                    {listing.rating ? (
-                      <div className="flex items-center gap-1">
-                        <span className="text-yellow-500">★</span>
-                        <span>{listing.rating}</span>
-                        {listing.reviewCount && (
-                          <span className="text-gray-500">({listing?.reviewCount})</span>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-gray-400">No rating</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {listing.guests ? `${listing.guests} guests` : 'N/A'}
-                  </TableCell>
-                  <TableCell>
-                    <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
-                      Active
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="light"
-                        className="text-blue-600"
-                        as={Link}
-                        href={`/listings/property/${listing.id}`}
-                      >
-                        <Eye size={16} />
-                      </Button>
-                      <Button className='bg-transparent' isIconOnly size='sm' as={Link} href={`/dashboard/update/${listing.id}`}>
-                        <Edit size={16} />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="light"
-                        className="text-red-600"
-                      >
-                        <Trash2 size={16} />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardBody>
-      </Card>
-    </>
-  )
-
-  const renderReservations = () => (
-    <>
-      {/* Reservations Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Reservations Management</h2>
-          <p className="text-gray-600">Review and manage booking requests</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="bordered" startContent={<Search size={16} />}>
-            Search
-          </Button>
-          <Button variant="bordered" startContent={<BarChart3 size={16} />}>
-            Filter
-          </Button>
-        </div>
-      </div>
-
-      {/* Reservations Table */}
-      <Card className="bg-white shadow-sm">
-        <CardBody className="p-0">
-          <Table aria-label="Reservations table">
-            <TableHeader>
-              <TableColumn>GUEST</TableColumn>
-              <TableColumn>PROPERTY</TableColumn>
-              <TableColumn>DATES</TableColumn>
-              <TableColumn>GUESTS</TableColumn>
-              <TableColumn>TOTAL</TableColumn>
-              <TableColumn>STATUS</TableColumn>
-              <TableColumn>ACTIONS</TableColumn>
-            </TableHeader>
-            <TableBody>
-              {mockReservations.map((reservation) => (
-                <TableRow key={reservation.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar
-                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${reservation.guestName}`}
-                        size="sm"
-                      />
-                      <div>
-                        <p className="font-medium text-gray-900">{reservation.guestName}</p>
-                        <p className="text-sm text-gray-500">{reservation.guestEmail}</p>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Image
-                        src={reservation.propertyImage}
-                        alt={reservation.propertyName}
-                        width={50}
-                        height={35}
-                        className="object-cover rounded"
-                      />
-                      <span className="font-medium">{reservation.propertyName}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{reservation.checkIn}</p>
-                      <p className="text-sm text-gray-500">to {reservation.checkOut}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span>{reservation.guests} guests</span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="font-semibold text-green-600">${reservation.totalAmount}</span>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      color={
-                        reservation.status === 'confirmed' ? 'success' :
-                        reservation.status === 'pending' ? 'warning' : 'danger'
-                      }
-                      variant="flat"
-                    >
-                      {reservation.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      {reservation.status === 'pending' && (
-                        <>
-                          <Button
-                            size="sm"
-                            color="success"
-                            variant="flat"
-                            startContent={<CheckCircle size={16} />}
-                            onClick={() => handleReservationAction(reservation.id, 'accept')}
-                          >
-                            Accept
-                          </Button>
-                          <Button
-                            size="sm"
-                            color="danger"
-                            variant="flat"
-                            startContent={<XCircle size={16} />}
-                            onClick={() => handleReservationAction(reservation.id, 'decline')}
-                          >
-                            Decline
-                          </Button>
-                        </>
-                      )}
-                      {reservation.status === 'confirmed' && (
-                        <Button
-                          size="sm"
-                          variant="light"
-                          className="text-blue-600"
-                        >
-                          <Eye size={16} />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardBody>
-      </Card>
-    </>
-  )
-
-  const renderAnalytics = () => (
-    <Card className="bg-white shadow-sm">
-      <CardHeader>
-        <h2 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h2>
-        <p className="text-gray-600">Coming soon - detailed analytics and reporting</p>
-      </CardHeader>
-      <CardBody>
-        <div className="text-center py-12">
-          <BarChart3 size={48} className="mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Analytics Coming Soon</h3>
-          <p className="text-gray-600">We're working on comprehensive analytics features.</p>
-        </div>
-      </CardBody>
-    </Card>
-  )
-
-  const renderSettings = () => (
-    <Card className="bg-white shadow-sm">
-      <CardHeader>
-        <h2 className="text-2xl font-bold text-gray-900">Settings</h2>
-        <p className="text-gray-600">Manage your account and preferences</p>
-      </CardHeader>
-      <CardBody>
-        <div className="text-center py-12">
-          <Settings size={48} className="mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Settings Coming Soon</h3>
-          <p className="text-gray-600">Account management and preferences will be available here.</p>
-        </div>
-      </CardBody>
-    </Card>
-  )
-
-  const renderContent = () => {
-    switch (activeSection) {
-      case 'properties':
-        return renderProperties()
-      case 'reservations':
-        return renderReservations()
-      case 'analytics':
-        return renderAnalytics()
-      case 'settings':
-        return renderSettings()
-      default:
-        return renderOverview()
-    }
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+    <div className="p-8">
+      {/* Page Header */}
+      <div className="mb-8">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-xs font-semibold uppercase tracking-widest px-2 py-1 rounded-full" style={{ background: 'rgba(99,102,241,0.1)', color: '#6366f1' }}>
+            Dashboard
+          </span>
+        </div>
+        <h1 className="text-3xl font-bold text-gray-900">Good morning! 👋</h1>
+        <p className="text-gray-500 mt-1">Here's what's happening with your properties today.</p>
+      </div>
 
-      <div className="flex">
-        {/* Sidebar */}
-        {renderSidebar()}
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+        {statCards.map((card, index) => (
+          <div
+            key={index}
+            className="rounded-2xl p-5 transition-all duration-300 hover:-translate-y-0.5"
+            style={{
+              background: '#fff',
+              border: `1px solid ${card.border}`,
+              boxShadow: `0 4px 20px ${card.bg}`,
+            }}
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div
+                className="w-11 h-11 rounded-xl flex items-center justify-center"
+                style={{ background: card.gradient, boxShadow: `0 4px 12px ${card.bg}` }}
+              >
+                <card.icon size={20} className="text-white" />
+              </div>
+              <ArrowUpRight size={16} className="text-gray-300" />
+            </div>
+            <p className="text-2xl font-bold text-gray-900 mb-1">{card.value}</p>
+            <p className="text-sm text-gray-500 mb-2">{card.label}</p>
+            <p className="text-xs font-medium" style={{ color: '#6366f1' }}>{card.change}</p>
+          </div>
+        ))}
+      </div>
 
-        {/* Main Content */}
-        <div className="flex-1 lg:ml-0">
-          {/* Mobile header */}
-          <div className="lg:hidden flex items-center justify-between h-16 px-4 bg-white border-b border-gray-200">
-            <Button
-              variant="light"
-              isIconOnly
-              onPress={() => setSidebarOpen(true)}
+      {/* Two column grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Recent Reservations */}
+        <div className="lg:col-span-3 rounded-2xl bg-white p-6" style={{ border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">Recent Reservations</h3>
+              <p className="text-sm text-gray-500">Latest booking requests</p>
+            </div>
+            <Link
+              href="/dashboard/reservations"
+              className="flex items-center gap-1 text-sm font-medium hover:gap-2 transition-all duration-200"
+              style={{ color: '#6366f1' }}
             >
-              <Menu size={20} />
-            </Button>
-            <h1 className="text-xl font-bold text-gray-900">RentEase</h1>
-            <div className="w-10" /> {/* Spacer */}
+              View all <ChevronRight size={14} />
+            </Link>
           </div>
 
-          {/* Page Content */}
-          <div className="p-6">
-            {renderContent()}
+          <div className="space-y-3">
+            {reservations.length === 0 ? (
+              <div className="text-center py-10">
+                <Calendar size={36} className="mx-auto text-gray-200 mb-3" />
+                <p className="text-gray-400 font-medium">No reservations yet</p>
+                <p className="text-sm text-gray-300 mt-1">Bookings from guests will appear here</p>
+              </div>
+            ) : (
+              reservations.slice(0, 5).map((r) => (
+                <div key={r.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 transition-colors">
+                  <Avatar
+                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${r.user?.first_name}`}
+                    size="sm"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-800 text-sm truncate">{r.user?.first_name} {r.user?.last_name}</p>
+                    <p className="text-xs text-gray-400 truncate">{r.property?.name}</p>
+                  </div>
+                  <div className="text-right">
+                    <Chip
+                      size="sm"
+                      variant="flat"
+                      color={r.status === 'confirmed' ? 'success' : r.status === 'pending' ? 'warning' : 'danger'}
+                    >
+                      {r.status}
+                    </Chip>
+                    <p className="text-xs text-gray-400 mt-1">{r.start_date}</p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="lg:col-span-2 rounded-2xl bg-white p-6" style={{ border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
+          <div className="mb-6">
+            <h3 className="text-lg font-bold text-gray-900">Quick Actions</h3>
+            <p className="text-sm text-gray-500">Get things done fast</p>
+          </div>
+
+          <div className="space-y-3">
+            <Link
+              href="/dashboard/create"
+              className="flex items-center gap-4 p-4 rounded-xl transition-all duration-200 hover:-translate-y-0.5 group"
+              style={{
+                background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.06))',
+                border: '1px solid rgba(99,102,241,0.2)',
+              }}
+            >
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
+                <Plus size={18} className="text-white" />
+              </div>
+              <div>
+                <p className="font-semibold text-gray-800 text-sm">Add New Property</p>
+                <p className="text-xs text-gray-500">List a property for rent</p>
+              </div>
+              <ChevronRight size={16} className="ml-auto text-indigo-400" />
+            </Link>
+
+            <Link
+              href="/dashboard/properties"
+              className="flex items-center gap-4 p-4 rounded-xl transition-all duration-200 hover:-translate-y-0.5"
+              style={{
+                background: 'rgba(16,185,129,0.06)',
+                border: '1px solid rgba(16,185,129,0.2)',
+              }}
+            >
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>
+                <Building2 size={18} className="text-white" />
+              </div>
+              <div>
+                <p className="font-semibold text-gray-800 text-sm">Manage Properties</p>
+                <p className="text-xs text-gray-500">View and edit listings</p>
+              </div>
+              <ChevronRight size={16} className="ml-auto text-emerald-400" />
+            </Link>
+
+            <Link
+              href="/dashboard/reservations"
+              className="flex items-center gap-4 p-4 rounded-xl transition-all duration-200 hover:-translate-y-0.5"
+              style={{
+                background: 'rgba(245,158,11,0.06)',
+                border: '1px solid rgba(245,158,11,0.2)',
+              }}
+            >
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #f59e0b, #f97316)' }}>
+                <Calendar size={18} className="text-white" />
+              </div>
+              <div>
+                <p className="font-semibold text-gray-800 text-sm">Reservations</p>
+                <p className="text-xs text-gray-500">
+                  {pendingReservations > 0 ? `${pendingReservations} pending review` : 'No pending requests'}
+                </p>
+              </div>
+              <ChevronRight size={16} className="ml-auto text-amber-400" />
+            </Link>
+
+            <Link
+              href="/listings"
+              className="flex items-center gap-4 p-4 rounded-xl transition-all duration-200 hover:-translate-y-0.5"
+              style={{
+                background: 'rgba(59,130,246,0.06)',
+                border: '1px solid rgba(59,130,246,0.2)',
+              }}
+            >
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)' }}>
+                <Home size={18} className="text-white" />
+              </div>
+              <div>
+                <p className="font-semibold text-gray-800 text-sm">Public Listings</p>
+                <p className="text-xs text-gray-500">View your live listings</p>
+              </div>
+              <ChevronRight size={16} className="ml-auto text-blue-400" />
+            </Link>
           </div>
         </div>
       </div>
     </div>
   )
 }
-
-export default Dashboard

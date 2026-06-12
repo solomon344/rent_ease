@@ -4,10 +4,14 @@ import React, { useState, useCallback, useEffect } from 'react'
 import { Listing } from '@/data/listings'
 import FilterPanel from './filterPanel'
 import PropertyCard from './PropertyCard'
-import { SearchIcon } from 'lucide-react'
+import { SearchIcon, SlidersHorizontal, X, MapPin, Sparkles } from 'lucide-react'
 import { Button } from '@heroui/button'
+import { Chip } from '@heroui/chip'
+import dynamic from 'next/dynamic'
 import { buildFilterParams } from '@/lib/filterBuilder'
 import Api from '@/lib/api'
+
+const MapComponent = dynamic(() => import('./MapComponent'), { ssr: false })
 
 interface FilterState {
   minPrice: number
@@ -21,16 +25,23 @@ interface ListingsClientProps {
   initialListings: Listing[]
   amenities: any[]
   accessToken?: string
+  latitude?: number
+  longitude?: number
 }
+
+const locationChips = ['Banjul', 'Kololi', 'Kotu', 'Fajara', 'Brufut', 'Serekunda', 'Bakau']
 
 const ListingsClient: React.FC<ListingsClientProps> = ({
   initialListings,
   amenities,
   accessToken,
+  latitude,
+  longitude,
 }) => {
   const [listings, setListings] = useState<Listing[]>(initialListings)
   const [isLoading, setIsLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [filterOpen, setFilterOpen] = useState(false)
   const [filters, setFilters] = useState<FilterState>({
     minPrice: 10,
     maxPrice: 10000,
@@ -39,20 +50,15 @@ const ListingsClient: React.FC<ListingsClientProps> = ({
     search: '',
   })
 
-  // Fetch listings with filters
   const fetchListings = useCallback(
     async (currentFilters: FilterState) => {
       setIsLoading(true)
       try {
         const params = buildFilterParams(currentFilters)
-        const headers = accessToken
-          ? { Authorization: `Token ${accessToken}` }
-          : {}
-
+        const headers = accessToken ? { Authorization: `Token ${accessToken}` } : {}
         const response = await Api.get('/properties/', { params, headers })
         setListings(response.data as Listing[])
-      } catch (error) {
-        console.error('Error fetching listings:', error)
+      } catch {
         setListings([])
       } finally {
         setIsLoading(false)
@@ -61,30 +67,19 @@ const ListingsClient: React.FC<ListingsClientProps> = ({
     [accessToken]
   )
 
-  // Handle search input change
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setSearchQuery(value)
-  }
-
-  // Handle search button click
   const handleSearch = useCallback(() => {
     const newFilters = { ...filters, search: searchQuery }
     setFilters(newFilters)
     fetchListings(newFilters)
   }, [filters, searchQuery, fetchListings])
 
-  // Handle Enter key in search
   const handleSearchKeypress = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Enter') {
-        handleSearch()
-      }
+      if (e.key === 'Enter') handleSearch()
     },
     [handleSearch]
   )
 
-  // Handle filter changes
   const handleFilterChange = useCallback(
     (newFilterState: Partial<FilterState>) => {
       const updatedFilters = { ...filters, ...newFilterState }
@@ -94,14 +89,12 @@ const ListingsClient: React.FC<ListingsClientProps> = ({
     [filters, fetchListings]
   )
 
-  // Handle amenity selection
   const handleAmenityChange = useCallback(
     (amenityId: string, isChecked: boolean) => {
       setFilters((prev) => {
         const updatedAmenities = isChecked
           ? [...prev.amenities, amenityId]
           : prev.amenities.filter((id) => id !== amenityId)
-
         const newFilters = { ...prev, amenities: updatedAmenities }
         fetchListings(newFilters)
         return newFilters
@@ -110,15 +103,10 @@ const ListingsClient: React.FC<ListingsClientProps> = ({
     [fetchListings]
   )
 
-  // Handle price range change
   const handlePriceChange = useCallback(
     (value: number | number[]) => {
       if (Array.isArray(value)) {
-        const newFilters = {
-          ...filters,
-          minPrice: value[0],
-          maxPrice: value[1],
-        }
+        const newFilters = { ...filters, minPrice: value[0], maxPrice: value[1] }
         setFilters(newFilters)
         fetchListings(newFilters)
       }
@@ -126,7 +114,6 @@ const ListingsClient: React.FC<ListingsClientProps> = ({
     [filters, fetchListings]
   )
 
-  // Handle location filter change
   const handleLocationChange = useCallback(
     (location: string) => {
       const newFilters = { ...filters, location }
@@ -136,59 +123,175 @@ const ListingsClient: React.FC<ListingsClientProps> = ({
     [filters, fetchListings]
   )
 
-  return (
-    <div className="w-full flex flex-col gap-6 px-6 py-8 bg-gray-200/10">
-      <h1 className="font-bold text-3xl">Find Your Next Stay</h1>
+  const handleLocationChip = (loc: string) => {
+    const newLoc = filters.location === loc.toLowerCase() ? '' : loc.toLowerCase()
+    handleLocationChange(newLoc)
+  }
 
-      {/* Search Bar */}
-      <div className="bg-white px-4 py-3 rounded-lg shadow-md shadow-gray-200/20 flex items-center gap-4">
-        <div className="flex items-center gap-2 bg-gray-100 rounded-md px-3 py-1 w-full">
-          <SearchIcon size={'1.2rem'} className="text-gray-500" />
-          <input
-            type="text"
-            placeholder="Search by location, city or neighborhood"
-            className="h-full grow py-2 rounded-md outline-none border-none bg-gray-100"
-            value={searchQuery}
-            onChange={handleSearchChange}
-            onKeyPress={handleSearchKeypress}
-          />
+  const activeFilterCount =
+    (filters.amenities.length > 0 ? 1 : 0) +
+    (filters.location ? 1 : 0) +
+    (filters.minPrice > 10 || filters.maxPrice < 10000 ? 1 : 0)
+
+  return (
+    <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #0f172a 0%, #1e1b4b 30%, #f8fafc 30%)' }}>
+      {/* Hero Header */}
+      <div className="px-6 pt-12 pb-20 max-w-7xl mx-auto">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4 text-xs font-semibold"
+            style={{ background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.3)' }}>
+            <Sparkles size={12} />
+            {listings.length} properties available
+          </div>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-3 tracking-tight">
+            Find Your Perfect Stay
+          </h1>
+          <p className="text-indigo-200/70 text-lg max-w-xl mx-auto">
+            Discover handpicked properties across The Gambia's most beautiful locations
+          </p>
         </div>
 
-        <div>
+        {/* Search Bar */}
+        <div
+          className="max-w-2xl mx-auto rounded-2xl p-2 flex items-center gap-2"
+          style={{
+            background: 'rgba(255,255,255,0.95)',
+            boxShadow: '0 20px 60px rgba(99,102,241,0.25)',
+            border: '1px solid rgba(255,255,255,0.8)',
+          }}
+        >
+          <div className="flex items-center gap-2 flex-1 px-3">
+            <MapPin size={18} className="text-indigo-400 flex-shrink-0" />
+            <input
+              type="text"
+              placeholder="Search by location, city or neighborhood..."
+              className="w-full py-2.5 bg-transparent outline-none text-gray-700 text-sm placeholder-gray-400"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={handleSearchKeypress}
+            />
+            {searchQuery && (
+              <button onClick={() => { setSearchQuery(''); handleLocationChange('') }}>
+                <X size={16} className="text-gray-400 hover:text-gray-600" />
+              </button>
+            )}
+          </div>
           <Button
-            color="primary"
-            radius="sm"
+            onPress={handleSearch}
             isLoading={isLoading}
-            onClick={handleSearch}
+            className="font-semibold px-6 rounded-xl"
+            style={{
+              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+              color: '#fff',
+              boxShadow: '0 4px 12px rgba(99,102,241,0.4)',
+            }}
+            startContent={!isLoading && <SearchIcon size={16} />}
           >
-            <SearchIcon size={'1.2rem'} />
-            <span className="hidden lg:block">Search</span>
+            Search
           </Button>
+        </div>
+
+        {/* Location Quick Filters */}
+        <div className="flex flex-wrap items-center justify-center gap-2 mt-5">
+          {locationChips.map((loc) => (
+            <button
+              key={loc}
+              onClick={() => handleLocationChip(loc)}
+              className="px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200"
+              style={{
+                background: filters.location === loc.toLowerCase()
+                  ? 'linear-gradient(135deg, #6366f1, #8b5cf6)'
+                  : 'rgba(255,255,255,0.1)',
+                color: filters.location === loc.toLowerCase() ? '#fff' : 'rgba(255,255,255,0.7)',
+                border: filters.location === loc.toLowerCase()
+                  ? '1px solid transparent'
+                  : '1px solid rgba(255,255,255,0.15)',
+              }}
+            >
+              {loc}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Filters and Listings */}
-      <div className="flex flex-col-reverse lg:flex-row gap-6 mt-[4rem]">
-        <FilterPanel
-          amenities={amenities}
-          onAmenityChange={handleAmenityChange}
-          onPriceChange={handlePriceChange}
-          onLocationChange={handleLocationChange}
-          selectedAmenities={filters.amenities}
-          priceRange={[filters.minPrice, filters.maxPrice]}
-        />
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 pb-16">
+        {/* Toolbar */}
+        <div className="flex items-center justify-between mb-6">
+          <p className="text-gray-600 font-medium">
+            {isLoading ? 'Searching...' : `${listings.length} propert${listings.length !== 1 ? 'ies' : 'y'} found`}
+          </p>
+          <Button
+            size="sm"
+            variant="bordered"
+            className="border-gray-200 text-gray-600 font-medium"
+            startContent={<SlidersHorizontal size={15} />}
+            onPress={() => setFilterOpen(!filterOpen)}
+          >
+            Filters
+            {activeFilterCount > 0 && (
+              <span className="ml-1 w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center text-white" style={{ background: '#6366f1' }}>
+                {activeFilterCount}
+              </span>
+            )}
+          </Button>
+        </div>
 
-        {/* Listings Grid */}
-        <div className="grow grid grid-cols-1 md:grid-cols-2 items-center lg:grid-cols-3 gap-6">
-          {isLoading ? (
-            <p className="w-full text-center col-span-3">Loading listings...</p>
-          ) : listings?.length === 0 ? (
-            <p className="w-full text-center col-span-3">No listings found.</p>
-          ) : (
-            listings.map((listing) => (
-              <PropertyCard key={listing.id} {...listing} />
-            ))
-          )}
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Filter Panel */}
+          <div className={`lg:block lg:w-72 flex-shrink-0 ${filterOpen ? 'block' : 'hidden'}`}>
+            <FilterPanel
+              amenities={amenities}
+              onAmenityChange={handleAmenityChange}
+              onPriceChange={handlePriceChange}
+              onLocationChange={handleLocationChange}
+              selectedAmenities={filters.amenities}
+              priceRange={[filters.minPrice, filters.maxPrice]}
+            />
+          </div>
+
+          {/* Listings Grid */}
+          <div className="flex-1">
+            {isLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="rounded-2xl bg-white overflow-hidden animate-pulse" style={{ border: '1px solid #e2e8f0' }}>
+                    <div className="h-52 bg-gray-100" />
+                    <div className="p-4 space-y-3">
+                      <div className="h-4 bg-gray-100 rounded w-3/4" />
+                      <div className="h-3 bg-gray-100 rounded w-1/2" />
+                      <div className="h-3 bg-gray-100 rounded w-1/3" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : listings.length === 0 ? (
+              <div className="text-center py-24">
+                <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(99,102,241,0.08)' }}>
+                  <SearchIcon size={36} style={{ color: '#6366f1' }} />
+                </div>
+                <h3 className="text-lg font-bold text-gray-800 mb-2">No properties found</h3>
+                <p className="text-gray-400 mb-4">Try adjusting your filters or search term</p>
+                <Button
+                  size="sm"
+                  onPress={() => { 
+                    setSearchQuery('')
+                    setFilters({ minPrice: 10, maxPrice: 10000, amenities: [], location: '', search: '' })
+                    fetchListings({ minPrice: 10, maxPrice: 10000, amenities: [], location: '', search: '' })
+                  }}
+                  style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff' }}
+                >
+                  Clear all filters
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                {listings.map((listing) => (
+                  <PropertyCard key={listing.id} {...listing} />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

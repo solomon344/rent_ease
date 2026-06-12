@@ -4,9 +4,10 @@ import Navbar from "@/components/navbar";
 
 const ClientNavbar = () => {
   const pathname = usePathname();
-  const hideNavbarRoutes = ['/signup', '/login']; // Add more routes as needed
+  // Hide navbar on all dashboard routes
+  const hideNavbarRoutes = ['/dashboard'];
 
-  if (hideNavbarRoutes.includes(pathname)) {
+  if (hideNavbarRoutes.some(route => pathname === route || pathname.startsWith(route + '/'))) {
     return null;
   }
 

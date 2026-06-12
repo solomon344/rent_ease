@@ -33,6 +33,17 @@ export interface Booking {
     guests: number;
     created_at: string;
     total_price: number;
+    status: 'pending' | 'confirmed' | 'cancelled' | 'rejected';
+    payment_intent_id?: string;
+    payment_link?: string;
+    payment_state?: 'pending' | 'requires_payment' | 'paid' | 'failed';
+}
+
+export interface PropertyMedia {
+    id: string;
+    url: string;
+    type: 'image' | 'video';
+    order: number;
 }
 
 export interface Listing {
@@ -41,7 +52,10 @@ export interface Listing {
     price: number;
     imageUrl: string;
     images?: string[]; // Array of image URLs for gallery
+    media?: PropertyMedia[];
     location: string;
+    latitude?: number;
+    longitude?: number;
     description: string;
     amenities: Amenity[];
     host?: string;
@@ -232,7 +246,29 @@ export class DataLoader {
 
     async bookListing(listing: Listing, start_date: string, end_date: string, guests: number, total_price: number,acess_token: string): Promise<Boolean> {
         const booking = {id:listing.id, start_date, end_date, guests, total_price };
-        const response = await Api.post('/booking/', booking,{headers: {'Authorization': `Token ${acess_token}`}});
+        const response = await Api.post('/booking/create/', booking,{headers: {'Authorization': `Token ${acess_token}`}});
         return response.status === 201 || response.status === 200
+    }
+
+    async getBookingForPropertyOwner(owner_id:string): Promise<Booking[]> {
+        const response = await Api.get(`/booking/?property_owner_id=${owner_id}`)
+        return response.data as Booking[]
+    }
+
+    async setBookingStatus(booking_id: string, status: string,acess_token: string): Promise<Boolean> {
+        const booking = {id:booking_id, status};
+        const response = await Api.post(`/booking/status/`, booking,{headers: {'Authorization': `Token ${acess_token}`}});
+        return response.data
+    }
+
+    async cancelBooking(booking_id:string,access_token:string): Promise<Boolean>{
+        const booking = {id:booking_id};
+        const response = await Api.post(`/booking/cancel/`, booking,{headers: {'Authorization': `Token ${access_token}`}});
+        return response.data
+    }
+
+    async getUserBookings(acess_token: string): Promise<Booking[]> {
+        const response = await Api.get('/booking/my/', { headers: { Authorization: `Token ${acess_token}` } });
+        return response.data as Booking[];
     }
 }

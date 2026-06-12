@@ -1,4 +1,6 @@
 import axios from 'axios';
+import { getSession } from 'next-auth/react';
+import type { CustomSession } from '@/types';
 
 const Api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -7,9 +9,15 @@ const Api = axios.create({
   },
 });
 
-
-// Optionally, add interceptors here if needed
-// Api.interceptors.request.use(...);
-// Api.interceptors.response.use(...);
+if (typeof window !== 'undefined') {
+  Api.interceptors.request.use(async (config) => {
+    const session = await getSession() as CustomSession;
+    const token = session?.user?.djangoAccess 
+    if (token && config?.headers) {
+      config.headers.Authorization = `Token ${token}`;
+    }
+    return config;
+  });
+}
 
 export default Api;

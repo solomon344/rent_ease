@@ -9,6 +9,7 @@ const es = initEdgeStore.create();
 const edgeStoreRouter = es.router({
   publicFiles: es.fileBucket(),
   rentEaseImages: es.imageBucket(),
+  propertyMedia: es.fileBucket(),
 });
 
 const handler = createEdgeStoreNextHandler({

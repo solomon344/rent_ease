@@ -7,7 +7,7 @@ import { auth } from "@/lib/auth";
 import { Providers } from "./providers";
 
 import { siteConfig } from "@/config/site";
-import { fontSans } from "@/config/fonts";
+import { fontSans, fontBungee } from "@/config/fonts";
 import ClientNavbar from "@/components/ClientNavbar";
 
 
@@ -18,7 +18,8 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   icons: {
-    icon: "/favicon.ico",
+    icon: "/rent_ease_icon.png",
+    
   },
 };
 
@@ -40,6 +41,7 @@ export default async function RootLayout({children,}: {children: React.ReactNode
         className={clsx(
           "min-h-screen  ",
           fontSans.variable,
+          fontBungee.variable
         )}
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "system" }}>

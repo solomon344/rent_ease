@@ -1,405 +1,277 @@
+'use client'
 import "./style.css"
-import { Link } from "@heroui/link";
-import { Snippet } from "@heroui/snippet";
-import { Code } from "@heroui/code";
 import { Button } from "@heroui/button"
-import { Card, CardHeader, CardBody, CardFooter } from "@heroui/card"
-import { SearchIcon, ArrowRight, Shield, Clock, Users, MapPin, Star, CheckCircle, Key, Heart, Award, HomeIcon } from 'lucide-react'
+import { Card, CardBody } from "@heroui/card"
+import { 
+  SearchIcon, 
+  ArrowRight, 
+  Shield, 
+  Clock, 
+  Users, 
+  MapPin, 
+  Star, 
+  HomeIcon, 
+  Sparkles,
+  ChevronRight,
+  TrendingUp,
+  Heart,
+  Key
+} from 'lucide-react'
 import Navbar from "@/components/navbar"
-
-import { siteConfig } from "@/config/site";
-
+import Footer from "@/components/footer"
+import { Image } from "@heroui/image"
+import Link from "next/link"
 
 export default function Home() {
   return (
-    <div className="min-h-screen w-full">
+    <div className="min-h-screen w-full bg-white overflow-hidden">
       {/* Hero Section */}
-      <div className="image-bg">
-        <div className="bg-black/45 w-full h-full py-[8rem] flex flex-col items-center justify-center gap-8">
-          <div className="flex flex-col gap-2 text-center max-w-4xl">
-            <h1 className="text-5xl md:text-6xl font-bold text-white leading-tight">
-              Find Your Perfect <span className="text-blue-400">Rental</span>
+      <div className="relative min-h-[90vh] flex items-center justify-center pt-20 pb-16 overflow-hidden">
+        {/* Animated Background Blobs */}
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-200/40 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-200/40 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
+        
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
+          <div className="space-y-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-2" style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)' }}>
+              <Sparkles size={14} className="text-indigo-600" />
+              <span className="text-sm font-bold text-indigo-700 tracking-wide uppercase">Your journey starts here</span>
+            </div>
+            
+            <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 leading-[1.1] tracking-tight">
+              Find Your Next <br />
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 animate-gradient-x">Dream Home</span>
             </h1>
-            <p className="text-xl text-slate-200 max-w-2xl">
-              Browse thousands of verified listings and connect with trusted landlords easily. Your dream home is just a search away.
+            
+            <p className="text-xl text-slate-500 max-w-xl leading-relaxed">
+              Explore thousands of hand-picked rental properties in The Gambia. From coastal villas to urban apartments, we find the perfect match for your lifestyle.
             </p>
-          </div>
 
-          <div className="w-full max-w-2xl">
-            <div className="py-3 rounded-full bg-white/95 backdrop-blur-md flex items-center px-6 shadow-lg">
-              <input
-                type="text"
-                placeholder="Search for apartments, houses, or rooms... (Coming Soon)"
-                className="flex-1 px-4 py-3 border-none outline-none text-gray-700 placeholder-gray-500"
-              />
-              <Button isDisabled size="lg" color="primary" radius="full" isIconOnly className="ml-2">
-                <SearchIcon size={20} />
-              </Button>
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <Link href="/listings">
+                <Button 
+                  size="lg" 
+                  className="px-10 h-14 font-bold text-lg rounded-2xl group transition-all duration-300"
+                  style={{ 
+                    background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', 
+                    color: '#fff',
+                    boxShadow: '0 10px 25px rgba(99,102,241,0.4)'
+                  }}
+                  endContent={<ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />}
+                >
+                  Explore Listings
+                </Button>
+              </Link>
+              <Link href="/login">
+                <Button 
+                   variant="bordered"
+                   size="lg" 
+                   className="px-10 h-14 font-bold text-lg rounded-2xl border-2 border-slate-200 hover:border-indigo-500 hover:text-indigo-600 transition-all font-semibold"
+                >
+                  List Property
+                </Button>
+              </Link>
+            </div>
+
+            <div className="flex items-center gap-8 pt-4">
+              <div>
+                <p className="text-3xl font-extrabold text-slate-900 mb-0.5">2.5k+</p>
+                <p className="text-sm text-slate-400 font-medium">Active Listings</p>
+              </div>
+              <div className="w-px h-10 bg-slate-200" />
+              <div>
+                <p className="text-3xl font-extrabold text-slate-900 mb-0.5">10k+</p>
+                <p className="text-sm text-slate-400 font-medium">Happy Renters</p>
+              </div>
+              <div className="w-px h-10 bg-slate-200" />
+              <div>
+                <p className="text-3xl font-extrabold text-slate-900 mb-0.5">99%</p>
+                <p className="text-sm text-slate-400 font-medium">Success Rate</p>
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-4 text-white">
-            <p className="text-lg">Have a place to rent?</p>
-            <Button
-              className="px-8 bg-white/20 backdrop-blur-md text-white border-2 border-white/30 hover:bg-white/30 transition-all duration-300"
-              radius="full"
-              href="/login"
-              as={'a'}
-              endContent={<ArrowRight size={18} />}
-              size="lg"
-            >
-              List Your Property
-            </Button>
+          <div className="relative group">
+            <div className="relative rounded-[2.5rem] overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-[1.02]">
+              <Image 
+                src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80" 
+                alt="Modern Architecture"
+                className="w-full h-[600px] object-cover"
+              />
+              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent" />
+              
+              {/* Floating Card */}
+              <div 
+                className="absolute bottom-10 left-10 right-10 p-6 rounded-3xl backdrop-blur-xl border border-white/20 shadow-2xl"
+                style={{ background: 'rgba(255,255,255,0.85)' }}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-bold text-slate-900 text-lg">Emerald Coastal Villa</h4>
+                    <p className="text-slate-500 text-sm flex items-center gap-1 mt-0.5">
+                      <MapPin size={12} /> Brufut Heights, Gambia
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-extrabold text-indigo-600 text-xl">D12,500</p>
+                    <p className="text-slate-400 text-xs">per night</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Background elements */}
+            <div className="absolute -top-6 -right-6 w-32 h-32 bg-indigo-500 rounded-3xl -z-10 group-hover:rotate-12 transition-transform duration-500" />
+            <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-purple-500 rounded-3xl -z-10 group-hover:-rotate-12 transition-transform duration-500" />
           </div>
         </div>
       </div>
 
-      {/* Why Book With Us Section */}
-      <div className="py-20 px-6 bg-gradient-to-b from-gray-50 to-white">
-        <div className="max-w-6xl mx-auto">
+      {/* Benefits Section */}
+      <div className="py-24 px-6 relative bg-slate-50/50">
+        <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Why Choose RentEase?</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Discover a new way to find rental properties with our curated selection and exceptional support
+            <div className="inline-block px-3 py-1 rounded-full text-xs font-bold text-indigo-600 bg-indigo-50 mb-3 uppercase tracking-widest">
+              Our Value
+            </div>
+            <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4">Why Book With Us?</h2>
+            <p className="text-lg text-slate-500 max-w-2xl mx-auto font-medium">
+              We've redesigned the rental experience to be transparent, fast, and secure for everyone.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <Card className="text-center p-6 hover:shadow-lg transition-shadow duration-300 border-0 shadow-md">
-              <CardBody className="pt-6">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Shield className="w-8 h-8 text-blue-600" />
-                </div>
-                <h3 className="text-xl font-semibold mb-3">Verified Properties</h3>
-                <p className="text-gray-600">All listings are thoroughly verified for authenticity and quality</p>
-              </CardBody>
-            </Card>
-
-            <Card className="text-center p-6 hover:shadow-lg transition-shadow duration-300 border-0 shadow-md">
-              <CardBody className="pt-6">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Clock className="w-8 h-8 text-green-600" />
-                </div>
-                <h3 className="text-xl font-semibold mb-3">Quick Response</h3>
-                <p className="text-gray-600">Get responses from landlords within 24 hours of your inquiry</p>
-              </CardBody>
-            </Card>
-
-            <Card className="text-center p-6 hover:shadow-lg transition-shadow duration-300 border-0 shadow-md">
-              <CardBody className="pt-6">
-                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Users className="w-8 h-8 text-purple-600" />
-                </div>
-                <h3 className="text-xl font-semibold mb-3">Trusted Community</h3>
-                <p className="text-gray-600">Join thousands of satisfied renters and reliable landlords</p>
-              </CardBody>
-            </Card>
-
-            <Card className="text-center p-6 hover:shadow-lg transition-shadow duration-300 border-0 shadow-md">
-              <CardBody className="pt-6">
-                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Award className="w-8 h-8 text-orange-600" />
-                </div>
-                <h3 className="text-xl font-semibold mb-3">Best Price Guarantee</h3>
-                <p className="text-gray-600">Find the best deals with our price matching guarantee</p>
-              </CardBody>
-            </Card>
-          </div>
-        </div>
-      </div>
-
-      {/* How It Works Section */}
-      <div className="py-20 px-6 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">How It Works</h2>
-            <p className="text-xl text-gray-600">Finding your perfect rental has never been easier</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-12">
-            <div className="text-center">
-              <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 text-white text-2xl font-bold">
-                1
-              </div>
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 -mt-12">
-                <SearchIcon className="w-8 h-8 text-blue-600" />
-              </div>
-              <h3 className="text-2xl font-semibold mb-4">Search & Discover</h3>
-              <p className="text-gray-600 text-lg">
-                Browse through our extensive collection of verified rental properties using our advanced search filters
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-20 h-20 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-6 text-white text-2xl font-bold">
-                2
-              </div>
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 -mt-12">
-                <Key className="w-8 h-8 text-green-600" />
-              </div>
-              <h3 className="text-2xl font-semibold mb-4">Connect & Book</h3>
-              <p className="text-gray-600 text-lg">
-                Contact landlords directly and book your preferred property with our secure booking system
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-20 h-20 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 text-white text-2xl font-bold">
-                3
-              </div>
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4 -mt-12">
-                <HomeIcon className="w-8 h-8 text-purple-600" />
-              </div>
-              <h3 className="text-2xl font-semibold mb-4">Move In</h3>
-              <p className="text-gray-600 text-lg">
-                Complete your move-in process smoothly with our comprehensive support and documentation
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Popular Locations Section */}
-      <div className="py-20 px-6 bg-gray-50">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Popular Locations</h2>
-            <p className="text-xl text-gray-600">Explore rentals in the most sought-after neighborhoods</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
-              { city: "Banjul", properties: "2,340", image: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=400&h=300&fit=crop" },
-              { city: "Brikama", properties: "1,890", image: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&h=300&fit=crop" },
-              { city: "Kartong", properties: "1,456", image: "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=400&h=300&fit=crop" },
-              { city: "Serekunda", properties: "987", image: "https://images.unsplash.com/photo-1514565131-fce0801e5785?w=400&h=300&fit=crop" },
-              { city: "Kerewan", properties: "756", image: "https://images.unsplash.com/photo-1531218150217-11f600ee55a3?w=400&h=300&fit=crop" },
-              { city: "Brufut", properties: "623", image: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=400&h=300&fit=crop" }
-            ].map((location, index) => (
-              <Card key={index} className="overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer group">
-                <div className="relative h-48">
-                  <img
-                    src={location.image}
-                    alt={location.city}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-300" />
-                  <div className="absolute bottom-4 left-4 text-white">
-                    <h3 className="text-xl font-bold">{location.city}</h3>
-                    <p className="text-sm opacity-90">{location.properties} properties</p>
-                  </div>
+              { icon: Shield, title: "Verified Listings", desc: "Every property goes through a rigorous 3-step verification process.", color: "indigo" },
+              { icon: TrendingUp, title: "Best Value", desc: "Transparent pricing with zero hidden fees and direct landlord negotiations.", color: "indigo" },
+              { icon: Clock, title: "Quick Move-in", desc: "Our streamlined digital documentation lets you move in within 24 hours.", color: "indigo" },
+              { icon: Heart, title: "Secure Support", desc: "24/7 dedicated local assistance for both tenants and owners.", color: "indigo" }
+            ].map((benefit, i) => (
+              <div key={i} className="group rounded-[2.5rem] p-8 border border-white transition-all duration-300 hover:border-indigo-100 hover:shadow-[0_20px_40px_rgba(0,0,0,0.04)] bg-white shadow-sm">
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform bg-indigo-50`}>
+                  <benefit.icon className={`w-7 h-7 text-indigo-600`} />
                 </div>
-              </Card>
+                <h3 className="text-xl font-bold text-slate-900 mb-3">{benefit.title}</h3>
+                <p className="text-slate-500 text-sm leading-relaxed font-medium">{benefit.desc}</p>
+              </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Testimonials Section */}
-      <div className="py-20 px-6 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">What Our Users Say</h2>
-            <p className="text-xl text-gray-600">Real experiences from real renters</p>
+      {/* Popular Locations */}
+      <div className="py-24 px-6 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+            <div>
+              <h2 className="text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">Explore Locations</h2>
+              <p className="text-lg text-slate-500 max-w-xl font-medium">
+                Explore the most sought-after neighborhoods across the coast and city.
+              </p>
+            </div>
+            <Link href="/listings" className="group flex items-center gap-2 font-bold text-indigo-600">
+              View All Areas <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+            </Link>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="p-6 border-0 shadow-lg">
-              <CardBody>
-                <div className="flex items-center mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
-                  ))}
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {[
+              { city: "Kololi", properties: 48, image: "https://images.unsplash.com/photo-1590523277543-a94d2e4eb00b?w=800&q=80", span: "md:col-span-2" },
+              { city: "Banjul", properties: 32, image: "https://images.unsplash.com/photo-1549463591-14ca5a4100e7?w=800&q=80", span: "" },
+              { city: "Fajara", properties: 25, image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80", span: "" },
+              { city: "Brufut", properties: 19, image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80", span: "" },
+              { city: "Kotu", properties: 15, image: "https://images.unsplash.com/photo-1515263487990-61b07816b324?w=800&q=80", span: "md:col-span-2" },
+              { city: "Bakau", properties: 12, image: "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800&q=80", span: "" }
+            ].map((loc, i) => (
+              <Link key={i} href={`/listings?location=${loc.city.toLowerCase()}`} className={`${loc.span} relative group h-80 rounded-[2.5rem] overflow-hidden shadow-lg`}>
+                <Image 
+                  src={loc.image} 
+                  alt={loc.city} 
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  removeWrapper
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-indigo-900/40 transition-colors duration-500" />
+                <div className="absolute bottom-6 left-8 text-white translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                  <h3 className="text-2xl font-bold mb-1 tracking-tight">{loc.city}</h3>
+                  <p className="text-white/80 text-sm font-semibold">{loc.properties} properties available</p>
                 </div>
-                <p className="text-gray-600 mb-6 italic">
-                  "RentEase made finding my apartment so much easier. The verification process gave me peace of mind, and I found the perfect place within a week!"
-                </p>
-                <div className="flex items-center">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                    <span className="text-blue-600 font-bold">SM</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold">Sarah Mitchell</p>
-                    <p className="text-sm text-gray-500">New York, NY</p>
-                  </div>
-                </div>
-              </CardBody>
-            </Card>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
 
-            <Card className="p-6 border-0 shadow-lg">
-              <CardBody>
-                <div className="flex items-center mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
-                  ))}
-                </div>
-                <p className="text-gray-600 mb-6 italic">
-                  "As a landlord, RentEase helped me find reliable tenants quickly. The platform is user-friendly and the support team is excellent."
-                </p>
-                <div className="flex items-center">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
-                    <span className="text-green-600 font-bold">MJ</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold">Michael Johnson</p>
-                    <p className="text-sm text-gray-500">Property Owner</p>
-                  </div>
-                </div>
-              </CardBody>
-            </Card>
+      {/* How it Works */}
+      <div className="py-24 px-6 bg-slate-50/50">
+        <div className="max-w-7xl mx-auto relative text-center">
+          <div className="mb-20">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4 tracking-tight">How It Works</h2>
+            <p className="text-lg text-slate-500 font-medium leading-relaxed">RentEase makes finding your home as easy as 1-2-3</p>
+          </div>
 
-            <Card className="p-6 border-0 shadow-lg">
-              <CardBody>
-                <div className="flex items-center mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
-                  ))}
+          <div className="grid lg:grid-cols-3 gap-12 relative">
+            {[
+              { step: "01", title: "Search Property", desc: "Browse through our verified listings with powerful filters for location, price and more.", icon: SearchIcon },
+              { step: "02", title: "Instant Booking", desc: "Select your dates and book directly. Our secure system handles the paperwork for you.", icon: Key },
+              { step: "03", title: "Collect Keys", desc: "Meet your host and get settled in. Our support team is always here if you need anything.", icon: HomeIcon }
+            ].map((item, i) => (
+              <div key={i} className="flex flex-col items-center group">
+                <div className="w-32 h-32 rounded-[2.5rem] bg-white border border-slate-100 shadow-xl flex items-center justify-center mb-8 relative group-hover:-translate-y-2 transition-all duration-500">
+                   <div className="absolute -top-3 -right-3 w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-sm shadow-lg">
+                     {item.step}
+                   </div>
+                   <item.icon size={44} className="text-indigo-600" />
                 </div>
-                <p className="text-gray-600 mb-6 italic">
-                  "The response time from landlords was incredible. I got multiple offers within 24 hours and chose the best one for my needs."
-                </p>
-                <div className="flex items-center">
-                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-4">
-                    <span className="text-purple-600 font-bold">AL</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold">Alex Lee</p>
-                    <p className="text-sm text-gray-500">San Francisco, CA</p>
-                  </div>
-                </div>
-              </CardBody>
-            </Card>
+                <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">{item.title}</h3>
+                <p className="text-slate-500 leading-relaxed max-w-xs font-medium">{item.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
       {/* CTA Section */}
-      <div className="py-20 px-6 bg-gradient-to-r from-blue-600 to-purple-600">
-        <div className="max-w-4xl mx-auto text-center text-white">
-          <h2 className="text-4xl font-bold mb-6">Ready to Find Your Perfect Rental?</h2>
-          <p className="text-xl mb-8 opacity-90">
-            Join thousands of satisfied users who have found their dream homes through RentEase
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              size="lg"
-              className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 text-lg font-semibold"
-              radius="full"
-              endContent={<SearchIcon size={20} />}
-            >
-              Start Searching
-            </Button>
-            <Button
-              size="lg"
-              variant="bordered"
-              className="border-white text-white hover:bg-white/10 px-8 py-3 text-lg font-semibold"
-              radius="full"
-              endContent={<HomeIcon size={20} />}
-            >
-              List Your Property
-            </Button>
+      <div className="px-6 py-24 bg-white">
+        <div 
+          className="max-w-7xl mx-auto rounded-[4rem] p-12 md:p-24 text-center text-white relative overflow-hidden shadow-2xl shadow-indigo-200"
+          style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)' }}
+        >
+          {/* Animated Decorations */}
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/10 rounded-full blur-[120px] -mr-64 -mt-64" />
+          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-400/20 rounded-full blur-[120px] -ml-64 -mb-64" />
+          
+          <div className="relative z-10 max-w-4xl mx-auto">
+            <h2 className="text-4xl md:text-7xl font-extrabold mb-8 leading-[1.1] tracking-tight">Ready to Find Your <br /> Perfect Rental?</h2>
+            <p className="text-xl text-indigo-100 mb-12 leading-relaxed font-medium max-w-2xl mx-auto">
+              Join thousands of happy families and professionals who found their homes through RentEase. 
+              Start your journey today with the most trusted platform in The Gambia.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-6 justify-center">
+              <Link href="/listings">
+                <Button 
+                  size="lg" 
+                  className="bg-white text-indigo-600 hover:bg-slate-50 px-12 h-16 font-extrabold text-xl rounded-2xl transition-all shadow-xl shadow-black/10"
+                  endContent={<SearchIcon size={22} />}
+                >
+                  Start Searching
+                </Button>
+              </Link>
+              <Link href="/login">
+                <Button 
+                  size="lg" 
+                  variant="bordered"
+                  className="border-white/30 text-white hover:bg-white/10 px-12 h-16 font-extrabold text-xl rounded-2xl transition-all"
+                  endContent={<HomeIcon size={22} />}
+                >
+                  List Property
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-16 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-            {/* Company Info */}
-            <div>
-              <h3 className="text-2xl font-bold mb-4 text-blue-400">RentEase</h3>
-              <p className="text-gray-400 mb-4">
-                Making property rental simple, secure, and stress-free for everyone.
-              </p>
-              <div className="flex space-x-4">
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                  <span className="sr-only">Facebook</span>
-                  📘
-                </a>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                  <span className="sr-only">Twitter</span>
-                  🐦
-                </a>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                  <span className="sr-only">Instagram</span>
-                  📷
-                </a>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                  <span className="sr-only">LinkedIn</span>
-                  💼
-                </a>
-              </div>
-            </div>
-
-            {/* Quick Links */}
-            <div>
-              <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
-              <ul className="space-y-2">
-                <li><Link href="/" className="text-gray-400 hover:text-white transition-colors">Home</Link></li>
-                <li><Link href="/listings" className="text-gray-400 hover:text-white transition-colors">Browse Listings</Link></li>
-                <li><Link href="/dashboard" className="text-gray-400 hover:text-white transition-colors">Dashboard</Link></li>
-                <li><Link href="/about" className="text-gray-400 hover:text-white transition-colors">About Us</Link></li>
-              </ul>
-            </div>
-
-            {/* For Renters */}
-            <div>
-              <h4 className="text-lg font-semibold mb-4">For Renters</h4>
-              <ul className="space-y-2">
-                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">How to Search</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Booking Guide</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Tenant Rights</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">FAQ</a></li>
-              </ul>
-            </div>
-
-            {/* For Landlords */}
-            <div>
-              <h4 className="text-lg font-semibold mb-4">For Landlords</h4>
-              <ul className="space-y-2">
-                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">List Your Property</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Pricing Plans</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Verification Process</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Support</a></li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Newsletter Signup */}
-          <div className="border-t border-gray-800 pt-8 mb-8">
-            <div className="max-w-md mx-auto text-center">
-              <h4 className="text-lg font-semibold mb-4">Stay Updated</h4>
-              <p className="text-gray-400 mb-4">Get the latest rental tips and property listings delivered to your inbox.</p>
-              <div className="flex gap-2">
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
-                />
-                <Button size="sm" color="primary" className="px-6">
-                  Subscribe
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Bar */}
-          <div className="border-t border-gray-800 pt-8">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <p className="text-gray-400 text-sm mb-4 md:mb-0">
-                © 2025 RentEase. All rights reserved.
-              </p>
-              <div className="flex space-x-6 text-sm">
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</a>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">Terms of Service</a>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">Cookie Policy</a>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">Contact Us</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

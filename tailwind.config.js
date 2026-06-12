@@ -15,6 +15,7 @@ const config = {
       },
       colors: {
         primary: "#137fec",
+        secondary: "#ff5e00d6",
         "background-light": "#f6f7f8",
         "background-dark": "#101922",
         "text-light": "#0d141b",
@@ -23,6 +24,26 @@ const config = {
         "card-dark": "#182431",
         "border-light": "#e7edf3",
         "border-dark": "#2d3a46",
+      },
+      animation: {
+        'gradient-x': 'gradient-x 15s ease infinite',
+        'infinite-scroll': 'infinite-scroll 25s linear infinite',
+      },
+      keyframes: {
+        'gradient-x': {
+          '0%, 100%': {
+            'background-size': '200% 200%',
+            'background-position': 'left center',
+          },
+          '50%': {
+            'background-size': '200% 200%',
+            'background-position': 'right center',
+          },
+        },
+        'infinite-scroll': {
+          from: { transform: 'translateX(0)' },
+          to: { transform: 'translateX(-100%)' },
+        }
       },
     },
   },

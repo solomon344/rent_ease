@@ -1,78 +1,138 @@
 'use client'
-import React, { useState } from "react";
-import { StarIcon } from "lucide-react";
-import { Button } from "@heroui/button";
-import { Card, CardBody } from "@heroui/card";
-import { Divider } from "@heroui/divider";
-import { DatePicker } from "@heroui/date-picker";
-import { CalendarDate, getLocalTimeZone, today } from "@internationalized/date";
-import { Listing, DataLoader } from "@/data/listings";
-import { addToast } from "@heroui/toast";
-import { Input } from "@heroui/input";
-import { useSession } from "next-auth/react";
-
+import React, { useState, useEffect } from 'react'
+import { StarIcon, Users, Shield, CheckCircle2 } from 'lucide-react'
+import { Button } from '@heroui/button'
+import { Divider } from '@heroui/divider'
+import { DatePicker } from '@heroui/date-picker'
+import { CalendarDate, getLocalTimeZone, today } from '@internationalized/date'
+import { Listing, DataLoader } from '@/data/listings'
+import { addToast } from '@heroui/toast'
+import { Input } from '@heroui/input'
+import { useSession } from 'next-auth/react'
+import Link from 'next/link'
+import { isAxiosError } from 'axios'
 
 interface ReservationCardProps {
-  listing: Listing;
+  listing: Listing
 }
 
 const ReservationCard: React.FC<ReservationCardProps> = ({ listing }) => {
-  const [checkIn, setCheckIn] = useState<CalendarDate | null>(null);
-  const [checkOut, setCheckOut] = useState<CalendarDate | null>(null);
-  const [guests, setGuests] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [checkIn, setCheckIn] = useState<CalendarDate | null>(null)
+  const [checkOut, setCheckOut] = useState<CalendarDate | null>(null)
+  const [guests, setGuests] = useState(1)
+  const [loading, setLoading] = useState(false)
+  const [userBooked, setUserBooked] = useState(false)
 
-  const { data: session } = useSession();
-  
-  const dataLoader = new DataLoader();
+  const { data: session } = useSession()
+  const dataLoader = new DataLoader()
 
-  const nights = checkIn && checkOut ? checkOut.day - checkIn.day : 0; // Simplified
-  const subtotal = listing.price * nights;
-  const total = subtotal + (listing.cleaningFee || 0) + (listing.serviceFee || 0);
+  useEffect(() => {
+    const checkBookingStatus = async () => {
+      if (!session?.user?.access) return
+      try {
+        // @ts-ignore
+        const myBookings = await dataLoader.getUserBookings(session.user.access)
+        const activeBooking = myBookings.find(
+          b => b.property.id === listing.id && 
+          b.user.email === session.user?.email && 
+          (b.status === 'pending' || b.status === 'confirmed')
+        )
+        if (activeBooking) {
+          setUserBooked(true)
+        }
+      } catch (error) {
+        console.error('Error checking booking status:', error)
+      }
+    }
+    checkBookingStatus()
+  }, [session, listing.id])
+
+  const nights = checkIn && checkOut
+    ? Math.max(0, checkOut.toDate(getLocalTimeZone()).getTime() / 86400000 - checkIn.toDate(getLocalTimeZone()).getTime() / 86400000)
+    : 0
+
+  const subtotal = listing.price * nights
+  const cleaningFee = listing.cleaningFee || 0
+  const serviceFee = listing.serviceFee || 0
+  const total = subtotal + cleaningFee + serviceFee
 
   const handleBook = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
       // @ts-ignore
-       const success = await dataLoader.bookListing(listing, checkIn?.toString() || '', checkOut?.toString() || '', guests, total,session?.user?.access || '');
-       if (success) {
-         addToast({title:"Success",color:"success",description:"Booking successful."})
-       } else {
-         addToast({title:"Error",color:"danger",description:"Booking failed."})
-       }
-    }catch (error) {
-      console.error('Error booking listing:', error);
-      addToast({title:"Error",color:"danger",description:"Booking failed."})
+      const success = await dataLoader.bookListing(listing, checkIn?.toString() || '', checkOut?.toString() || '', guests, total, session?.user?.access || '')
+      if (success) {
+        addToast({ title: 'Booking Submitted!', color: 'success', description: 'Your booking request has been sent to the host.' })
+        setUserBooked(true)
+      } else {
+        addToast({ title: 'Booking Failed', color: 'danger', description: 'Something went wrong. Please try again.' })
+      }
+    } catch (e) {
+      if (isAxiosError(e)) {
+        addToast({ 
+          title: 'Booking Error', 
+          color: 'danger', 
+          description: e.response?.data?.message || 'Unable to complete booking.' 
+        })
+      } else {
+        addToast({ title: 'Error', color: 'danger', description: 'An unexpected error occurred.' })
+      }
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-
   }
 
-  const booked =  listing.bookings?.find(booking=>booking.user.email === session?.user?.email)
+  const booked = userBooked
+  const canBook = checkIn && checkOut && guests > 0 && !booked
 
   return (
-    <Card className="sticky top-4 py-4">
-      <CardBody className="space-y-4 px-6">
-        <div className="flex justify-between items-center">
+    <div
+      className="rounded-2xl overflow-hidden sticky top-6"
+      style={{
+        background: '#fff',
+        border: '1px solid #e2e8f0',
+        boxShadow: '0 8px 40px rgba(99,102,241,0.12)',
+      }}
+    >
+      {/* Price Header */}
+      <div
+        className="px-6 pt-6 pb-4"
+        style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(139,92,246,0.04))' }}
+      >
+        <div className="flex items-end justify-between mb-1">
           <div>
-            <span className="text-2xl font-bold">${listing.price}</span>
-            <span className="text-gray-500"> / night</span>
+            <span className="text-3xl font-extrabold text-gray-900">D{listing.price}</span>
+            <span className="text-gray-500 text-sm ml-1">/ night</span>
           </div>
-          <div className="flex items-center gap-1">
-            <StarIcon size={14} className="text-yellow-500" />
-            <span className="text-sm">{listing.rating || 0} ({listing.reviewCount || 0})</span>
-          </div>
+          {listing.rating && (
+            <div className="flex items-center gap-1 px-3 py-1 rounded-xl" style={{ background: 'rgba(245,158,11,0.1)' }}>
+              <StarIcon size={13} fill="#f59e0b" className="text-amber-400" />
+              <span className="text-sm font-bold text-gray-800">{listing.rating}</span>
+              {listing.reviewCount && (
+                <span className="text-xs text-gray-500 ml-0.5">({listing.reviewCount})</span>
+              )}
+            </div>
+          )}
         </div>
+        {booked && (
+          <div className="flex items-center gap-1.5 text-emerald-600 text-xs font-semibold mt-1">
+            <CheckCircle2 size={13} />
+            You've already booked this property
+          </div>
+        )}
+      </div>
 
-        <div className="space-y-2">
+      <div className="px-6 pb-6 space-y-4">
+        {/* Date Pickers */}
+        <div className="space-y-3 pt-2">
           <DatePicker
             label="Check-in"
             value={checkIn}
             onChange={setCheckIn}
             className="w-full"
             isRequired
-            isDisabled={booked? true : false}
+            isDisabled={!!booked}
+            classNames={{ inputWrapper: 'bg-gray-50 border border-gray-200' }}
           />
           <DatePicker
             label="Check-out"
@@ -80,58 +140,101 @@ const ReservationCard: React.FC<ReservationCardProps> = ({ listing }) => {
             onChange={setCheckOut}
             className="w-full"
             isRequired
-            isDisabled={booked? true : false}
+            isDisabled={!!booked}
+            classNames={{ inputWrapper: 'bg-gray-50 border border-gray-200' }}
           />
-
           <Input
             label="Guests"
             type="number"
+            min={1}
+            max={listing.guests || 10}
             value={guests.toString()}
             isRequired
-            isDisabled={booked? true : false}
-            onChange={(e) => setGuests(parseInt(e.target.value))}
+            isDisabled={!!booked}
+            onChange={(e) => setGuests(parseInt(e.target.value) || 1)}
+            startContent={<Users size={15} className="text-gray-400" />}
+            classNames={{ inputWrapper: 'bg-gray-50 border border-gray-200' }}
           />
         </div>
 
-        <Divider />
+        {/* Price Breakdown */}
+        {nights > 0 && (
+          <>
+            <Divider />
+            <div className="space-y-2.5">
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>D{listing.price} × {nights} night{nights !== 1 ? 's' : ''}</span>
+                <span className="font-medium text-gray-800">D{subtotal}</span>
+              </div>
+              {cleaningFee > 0 && (
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Cleaning fee</span>
+                  <span className="font-medium text-gray-800">D{cleaningFee}</span>
+                </div>
+              )}
+              {serviceFee > 0 && (
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Service fee</span>
+                  <span className="font-medium text-gray-800">D{serviceFee}</span>
+                </div>
+              )}
+              <Divider />
+              <div className="flex justify-between font-bold text-gray-900">
+                <span>Total</span>
+                <span className="text-indigo-600">D{total}</span>
+              </div>
+            </div>
+          </>
+        )}
 
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span>${listing.price} x {nights} nights</span>
-            <span>${subtotal}</span>
+        {/* CTA */}
+        {booked ? (
+          <div
+            className="w-full py-3 rounded-xl text-center text-sm font-semibold"
+            style={{ background: 'rgba(16,185,129,0.08)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)' }}
+          >
+            ✓ Booking Request Sent
           </div>
-          <div className="flex justify-between">
-            <span>Cleaning fee</span>
-            <span>${listing.cleaningFee || 0}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Service fee</span>
-            <span>${listing.serviceFee || 0}</span>
-          </div>
-        </div>
-
-        <Divider />
-
-        <div className="flex justify-between font-semibold">
-          <span>Total before taxes</span>
-          <span>${total}</span>
-        </div>
-
-        <div className="space-y-2">
-          {
-            booked ? <p className="text-sm text-green-500 text-center">You've already booked</p> : (
-            <Button onPress={handleBook} isLoading={loading} isDisabled={!checkIn || !checkOut || !guests} color="primary" radius="sm" fullWidth>
-            Reserve Now
+        ) : session?.user ? (
+          <Button
+            onPress={handleBook}
+            isLoading={loading}
+            isDisabled={!canBook}
+            fullWidth
+            className="font-bold h-12 rounded-xl text-base"
+            style={{
+              background: canBook
+                ? 'linear-gradient(135deg, #6366f1, #8b5cf6)'
+                : undefined,
+              color: canBook ? '#fff' : undefined,
+              boxShadow: canBook ? '0 4px 20px rgba(99,102,241,0.35)' : undefined,
+            }}
+          >
+            {nights > 0 ? `Reserve · D${total}` : 'Select dates to reserve'}
           </Button>
-             )
-          }
-          {/* <Button isDisabled variant="bordered" radius="sm" fullWidth>
-            Contact Host (Coming Soon)
-          </Button> */}
-        </div>
-      </CardBody>
-    </Card>
-  );
-};
+        ) : (
+          <div className="space-y-3">
+            <p className="text-center text-sm text-gray-500">Sign in to book this property</p>
+            <Link href="/login">
+              <Button
+                fullWidth
+                className="font-bold h-11 rounded-xl"
+                style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff' }}
+              >
+                Sign In to Book
+              </Button>
+            </Link>
+          </div>
+        )}
 
-export default ReservationCard;
+        {/* Trust badge */}
+        <div className="flex items-center justify-center gap-2 text-xs text-gray-400 pt-1">
+          <Shield size={12} />
+          <span>You won't be charged yet</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default ReservationCard
