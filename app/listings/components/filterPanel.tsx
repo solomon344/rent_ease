@@ -105,7 +105,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             <Checkbox
               key={amenity.id}
               isSelected={selectedAmenities.includes(amenity.id)}
-              onChange={(isChecked) => onAmenityChange(amenity.id, isChecked)}
+              onChange={(isChecked) => onAmenityChange(amenity.id, isChecked.currentTarget.checked)}
               classNames={{
                 label: 'text-sm text-gray-600',
                 wrapper: 'before:border-gray-300',
