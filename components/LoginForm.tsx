@@ -33,7 +33,7 @@ const LoginForm = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await signIn("credentials", { ...formData, redirect: false });
+      const res = await signIn("credentials", { ...formData, redirect: false,});
       if (res?.error) {
         addToast({ 
           title: 'Authentication Failed', 
@@ -149,13 +149,13 @@ const LoginForm = () => {
             }
           />
           <div className="flex justify-end">
-            <Link href="#" className="text-sm font-bold text-indigo-600 hover:text-indigo-700 transition-colors">
+            <Link href="/reset-password" className="text-sm font-bold text-indigo-600 hover:text-indigo-700 transition-colors">
               Forgot password?
             </Link>
           </div>
         </div>
 
-        <div className="flex items-center justify-between">
+        {/* <div className="flex items-center justify-between">
           <Checkbox 
             size="sm" 
             radius="sm"
@@ -166,7 +166,7 @@ const LoginForm = () => {
           >
             Remember for 30 days
           </Checkbox>
-        </div>
+        </div> */}
 
         <Button 
           isLoading={loading} 
