@@ -65,8 +65,9 @@ const SignupForm = () => {
     try {
       const result = validationSchema.safeParse(formData);
       if (!result.success) {
-        // @ts-ignore
+        
         const formatted = zod.treeifyError(result.error);
+        // @ts-ignore
         setFormError(formatError(formatted.properties));
         return;
       }
