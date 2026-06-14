@@ -11,7 +11,7 @@ import { Input } from '@heroui/input'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { isAxiosError } from 'axios'
-
+import type { CustomSession } from "@/types/index"
 interface ReservationCardProps {
   listing: Listing
 }
@@ -23,15 +23,15 @@ const ReservationCard: React.FC<ReservationCardProps> = ({ listing }) => {
   const [loading, setLoading] = useState(false)
   const [userBooked, setUserBooked] = useState(false)
 
-  const { data: session } = useSession()
+  const { data: session }:{ data: CustomSession | null} = useSession()
   const dataLoader = new DataLoader()
 
   useEffect(() => {
     const checkBookingStatus = async () => {
-      if (!session?.user?.access) return
+      if (!session?.user?.djangoAccess) return
       try {
         // @ts-ignore
-        const myBookings = await dataLoader.getUserBookings(session.user.access)
+        const myBookings = await dataLoader.getUserBookings(session.user.djangoAccess)
         const activeBooking = myBookings.find(
           b => b.property.id === listing.id && 
           b.user.email === session.user?.email && 
