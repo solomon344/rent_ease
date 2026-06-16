@@ -13,12 +13,16 @@ const PaymentVerifyPage = () => {
   const [status, setStatus] = useState<'loading' | 'paid' | 'pending' | 'failed' | 'error'>('loading')
   const [message, setMessage] = useState<string>('Verifying payment...')
   const [paymentLink, setPaymentLink] = useState<string | null>(null)
+  const [hasVerified, setHasVerified] = useState<boolean>(false)
 
   useEffect(() => {
     const verify = async () => {
+      if (hasVerified) return; // Prevent re-verification
+
       if (!bookingId) {
         setStatus('error')
         setMessage('Missing booking ID in the URL.')
+        setHasVerified(true);
         return
       }
 
@@ -47,11 +51,15 @@ const PaymentVerifyPage = () => {
         console.error('Payment verification failed', error)
         setStatus('error')
         setMessage('Unable to verify payment at the moment.')
+      } finally {
+        setHasVerified(true);
       }
     }
 
-    verify()
-  }, [bookingId, paymentIntentId])
+    if (bookingId && paymentIntentId && !hasVerified) {
+      verify()
+    }
+  }, [bookingId]) // Remove paymentIntentId to avoid re-triggers
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center p-6">
