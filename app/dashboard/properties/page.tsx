@@ -180,7 +180,7 @@ export default function PropertiesPage() {
                 <div className="absolute bottom-3 left-3 z-10 px-3 py-1 rounded-xl font-bold text-white text-sm backdrop-blur-sm "
                 style={{ background: 'rgba(99,102,241,0.85)', boxShadow: '0 2px 10px rgba(99,102,241,0.4)' }}
                 >
-                  <span className="text-white ">${listing.price}<span className="text-sm font-normal opacity-80">/night</span></span>
+                  <span className="text-white ">${listing.price}<span className="text-sm font-normal opacity-80">/month</span></span>
                 </div>
                 <div className="absolute top-3 right-3">
                   <Chip size="sm" className="bg-white/90 text-green-700 font-semibold text-xs">Active</Chip>

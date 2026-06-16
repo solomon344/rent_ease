@@ -34,7 +34,7 @@ const PropertyCard = ({ id, name, price, image, location, beds, baths, guests, r
             className="absolute z-10 bottom-3 left-3 px-3 py-1 rounded-xl font-bold text-white text-sm backdrop-blur-sm"
             style={{ background: 'rgba(99,102,241,0.85)', boxShadow: '0 2px 10px rgba(99,102,241,0.4)' }}
           >
-            D{price}<span className="font-normal opacity-80 text-xs"> /night</span>
+            D{price}<span className="font-normal opacity-80 text-xs"> /month</span>
           </div>
 
           {/* Wishlist */}

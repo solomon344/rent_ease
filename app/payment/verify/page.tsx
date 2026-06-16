@@ -9,7 +9,7 @@ import { CheckCircle2, XCircle, ArrowRight, Loader2 } from 'lucide-react'
 const PaymentVerifyPage = () => {
   const searchParams = useSearchParams()
   const bookingId = searchParams.get('booking_id')
-  const paymentIntentId = searchParams.get('payment_intent_id')
+  const transactionId = searchParams.get('transaction_id')
   const [status, setStatus] = useState<'loading' | 'paid' | 'pending' | 'failed' | 'error'>('loading')
   const [message, setMessage] = useState<string>('Verifying payment...')
   const [paymentLink, setPaymentLink] = useState<string | null>(null)
@@ -29,7 +29,10 @@ const PaymentVerifyPage = () => {
       try {
         const response = await Api.post(
           `/booking/payment/callback/`,
-          { booking_id: bookingId, transaction_id: paymentIntentId }
+          { 
+            booking_id: bookingId, 
+            transaction_id: transactionId
+          }
         )
         const data = response.data
         setPaymentLink(data.payment_link || null)
@@ -56,7 +59,7 @@ const PaymentVerifyPage = () => {
       }
     }
 
-    if (bookingId && paymentIntentId && !hasVerified) {
+    if (bookingId && !hasVerified) {
       verify()
     }
   }, [bookingId]) // Remove paymentIntentId to avoid re-triggers
