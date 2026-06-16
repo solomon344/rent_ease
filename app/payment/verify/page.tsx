@@ -23,8 +23,9 @@ const PaymentVerifyPage = () => {
       }
 
       try {
-        const response = await Api.get(
-          `/booking/payment/verify/?booking_id=${encodeURIComponent(bookingId)}${paymentIntentId ? `&payment_intent_id=${encodeURIComponent(paymentIntentId)}` : ''}`,
+        const response = await Api.post(
+          `/booking/payment/callback/`,
+          { booking_id: bookingId, transaction_id: paymentIntentId }
         )
         const data = response.data
         setPaymentLink(data.payment_link || null)

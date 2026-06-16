@@ -44,7 +44,7 @@ const SignupForm = () => {
     confirmPassword: zod.string().min(6),
     firstName: zod.string().min(2, "First name is required"),
     lastName: zod.string().min(2, "Last name is required"),
-    phone: zod.string().min(7, "Phone must be 7 digits").max(7, "Phone must be 7 digits"),
+    phone: zod.string().min(7, "Phone must be 7 digits").max(15, "Phone must be 7 digits"),
   }).refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
