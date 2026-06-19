@@ -2,6 +2,7 @@ import LoginForm from '../../components/LoginForm';
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Logo from '../../components/Logo';
+import Link from "next/link";
 
 const Page = async() => {
   const session = await auth()
@@ -37,9 +38,9 @@ const Page = async() => {
           <div className="flex items-center gap-4 text-white/50 text-sm font-medium">
             <span>© 2026 RentEase Inc.</span>
             <span className="w-1 h-1 rounded-full bg-white/30" />
-            <span>Privacy Policy</span>
+            <Link href={'privacy-policy'}>Privacy Policy</Link>
             <span className="w-1 h-1 rounded-full bg-white/30" />
-            <span>Terms of Service</span>
+            <Link href={'terms-of-service'}>Terms of Service</Link>
           </div>
         </div>
       </div>

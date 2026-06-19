@@ -348,7 +348,7 @@ const CreateProperty = ({ amenities }: { amenities: any[] }) => {
                   </div>
 
                   <Input
-                    label="Price per Night (USD)"
+                    label="Price per Night (GMD)"
                     type="number"
                     placeholder="99"
                     labelPlacement="outside"
@@ -357,7 +357,7 @@ const CreateProperty = ({ amenities }: { amenities: any[] }) => {
                     value={formData.price}
                     onValueChange={v => handleInputChange('price', v)}
                     isRequired
-                    startContent={<span className="text-gray-400">$</span>}
+                    startContent={<span className="text-gray-400">D</span>}
                     classNames={{ label: 'font-bold text-gray-700 mb-2', inputWrapper: 'bg-gray-50 border-gray-200' }}
                   />
 

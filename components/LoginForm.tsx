@@ -65,10 +65,18 @@ const LoginForm = () => {
     }
   };
 
-  const handleGoogleAuth = () => {
-    // Redirect to NextAuth Google sign-in. Django verification happens in the jwt callback.
-    signIn("google", { callbackUrl: '/listings' });
-  };
+const handleGoogleAuth = () => {
+  // Redirect to NextAuth Google sign-in. Django verification happens in the jwt callback.
+  signIn("google", { callbackUrl: '/listings' });
+};
+
+const handleTermsClick = () => {
+  router.push('/terms-of-service');
+};
+
+const handlePrivacyClick = () => {
+  router.push('/privacy-policy');
+};
 
   return (
     <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -222,12 +230,31 @@ const LoginForm = () => {
         </Button>
       </div>
 
-      <p className="text-center text-slate-500 font-medium text-sm">
-        New to RentEase?{" "}
-        <Link href="/signup" className="text-indigo-600 font-bold hover:text-indigo-700 hover:underline transition-all">
-          Create an account
-        </Link>
-      </p>
+<p className="text-center text-slate-500 font-medium text-sm">
+  New to RentEase?{" "}
+  <Link href="/signup" className="text-indigo-600 font-bold hover:text-indigo-700 hover:underline transition-all">
+    Create an account
+  </Link>
+</p>
+
+<div className="mt-4 text-center text-sm text-gray-500">
+  By signing in, you agree to our{' '}
+  <button
+    type="button"
+    onClick={handleTermsClick}
+    className="text-indigo-600 hover:text-indigo-500 font-medium transition-colors"
+  >
+    Terms of Service
+  </button>{' '}
+  and{' '}
+  <button
+    type="button"
+    onClick={handlePrivacyClick}
+    className="text-indigo-600 hover:text-indigo-500 font-medium transition-colors"
+  >
+    Privacy Policy
+  </button>
+</div>
     </div>
   );
 };

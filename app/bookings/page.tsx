@@ -209,7 +209,7 @@ export default function MyBookingsPage() {
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-gray-400 font-medium">Total Paid</p>
-                    <p className="text-lg font-black text-indigo-600">${booking.total_price}</p>
+                    <p className="text-lg font-black text-indigo-600">D{booking.total_price}</p>
                   </div>
                 </div>
 

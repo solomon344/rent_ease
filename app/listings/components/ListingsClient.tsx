@@ -11,7 +11,7 @@ import dynamic from 'next/dynamic'
 import { buildFilterParams } from '@/lib/filterBuilder'
 import Api from '@/lib/api'
 
-const MapComponent = dynamic(() => import('./MapComponent'), { ssr: false })
+
 
 interface FilterState {
   minPrice: number
@@ -29,7 +29,27 @@ interface ListingsClientProps {
   longitude?: number
 }
 
-const locationChips = ['Banjul', 'Kololi', 'Kotu', 'Fajara', 'Brufut', 'Serekunda', 'Bakau']
+const locationChips = [
+  'Banjul',
+  'Kololi',
+  'Kotu',
+  'Fajara',
+  'Brufut',
+  'Serekunda',
+  'Bakau',
+  'Banjul West',
+  'Banjul East',
+  'Banjul North',
+  'Banjul South',
+  'Brikama',
+  'Janjanbureh',
+  'Kanifing',
+  'Kerewan',
+  'Kuntaur',
+  'Mansakonko',
+  'Sukuta',
+  'Yundum'
+]
 
 const ListingsClient: React.FC<ListingsClientProps> = ({
   initialListings,
@@ -124,7 +144,7 @@ const ListingsClient: React.FC<ListingsClientProps> = ({
   )
 
   const handleLocationChip = (loc: string) => {
-    const newLoc = filters.location === loc.toLowerCase() ? '' : loc.toLowerCase()
+    const newLoc = filters.location === loc ? '' : loc
     handleLocationChange(newLoc)
   }
 
@@ -134,9 +154,9 @@ const ListingsClient: React.FC<ListingsClientProps> = ({
     (filters.minPrice > 10 || filters.maxPrice < 10000 ? 1 : 0)
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #0f172a 0%, #1e1b4b 30%, #f8fafc 30%)' }}>
+    <div className="min-h-screen flex flex-col gap-4">
       {/* Hero Header */}
-      <div className="px-6 pt-12 pb-20 max-w-7xl mx-auto">
+      <div className="px-6 pt-12 pb-20 w-full bg-orange-500 mx-auto">
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4 text-xs font-semibold"
             style={{ background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.3)' }}>
@@ -194,28 +214,28 @@ const ListingsClient: React.FC<ListingsClientProps> = ({
         {/* Location Quick Filters */}
         <div className="flex flex-wrap items-center justify-center gap-2 mt-5">
           {locationChips.map((loc) => (
-            <button
+            <Chip
               key={loc}
               onClick={() => handleLocationChip(loc)}
-              className="px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200"
+              className="px-4 py-1.5 text-sm font-medium transition-all duration-200"
               style={{
-                background: filters.location === loc.toLowerCase()
+                background: filters.location === loc
                   ? 'linear-gradient(135deg, #6366f1, #8b5cf6)'
                   : 'rgba(255,255,255,0.1)',
-                color: filters.location === loc.toLowerCase() ? '#fff' : 'rgba(255,255,255,0.7)',
-                border: filters.location === loc.toLowerCase()
+                color: filters.location === loc ? '#fff' : 'rgba(255,255,255,0.7)',
+                border: filters.location === loc
                   ? '1px solid transparent'
                   : '1px solid rgba(255,255,255,0.15)',
               }}
             >
               {loc}
-            </button>
+            </Chip>
           ))}
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 pb-16">
+      <div className="w-7xl mx-auto px-6 pb-16">
         {/* Toolbar */}
         <div className="flex items-center justify-between mb-6">
           <p className="text-gray-600 font-medium">
@@ -274,7 +294,7 @@ const ListingsClient: React.FC<ListingsClientProps> = ({
                 <p className="text-gray-400 mb-4">Try adjusting your filters or search term</p>
                 <Button
                   size="sm"
-                  onPress={() => { 
+                  onPress={() => {
                     setSearchQuery('')
                     setFilters({ minPrice: 10, maxPrice: 10000, amenities: [], location: '', search: '' })
                     fetchListings({ minPrice: 10, maxPrice: 10000, amenities: [], location: '', search: '' })

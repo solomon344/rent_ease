@@ -18,6 +18,11 @@ import {
   AlertCircle,
   ChevronRight,
   Building2,
+  User,
+  Settings,
+  Camera,
+  Upload,
+  Image as ImageIcon
 } from 'lucide-react'
 import { Button } from '@heroui/button'
 import { Chip } from '@heroui/chip'
@@ -28,15 +33,14 @@ export default function OverviewPage() {
   const { data: session }: { data: CustomSession | null } = useSession()
   const [listings, setListings] = React.useState<any[]>([])
   const [reservations, setReservations] = React.useState<Booking[]>([])
+  const [profileImage, setProfileImage] = useState<string | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
 
   React.useEffect(() => {
-  
-    // @ts-ignore
-   if (session?.user?.djangoAccess){
-     Api.get(`/properties/?owner__user__email=${session?.user?.email}`, { headers: { Authorization: `Token ${session?.user?.djangoAccess}` } }).then(res => setListings(res.data))
-    // @ts-ignore
-    Api.get(`/booking/?property__owner__email=${session?.user?.email}`, { headers: { Authorization: `Token ${session?.user?.djangoAccess}` } }).then(res => setReservations(res.data))
-   }
+    if (session?.user?.djangoAccess) {
+      Api.get(`/properties/?owner__user__email=${session?.user?.email}`, { headers: { Authorization: `Token ${session?.user?.djangoAccess}` } }).then(res => setListings(res.data))
+      Api.get(`/booking/?property__owner__email=${session?.user?.email}`, { headers: { Authorization: `Token ${session?.user?.djangoAccess}` } }).then(res => setReservations(res.data))
+    }
   }, [session?.user?.djangoAccess])
 
   const totalProperties = listings.length
@@ -48,9 +52,50 @@ export default function OverviewPage() {
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'GMD',
       maximumFractionDigits: 0,
     }).format(value)
+
+  const handleProfileImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return
+
+    const file = e.target.files[0]
+    if (!file.type.match('image.*')) {
+      addToast({ title: 'Invalid file type', description: 'Please upload an image file', variant: 'solid', color: 'danger' })
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      addToast({ title: 'File too large', description: 'Image must be less than 5MB', variant: 'solid', color: 'danger' })
+      return
+    }
+
+    setIsUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      // In a real app, you would send this to your backend API
+      // const response = await Api.post('/upload-profile-image', formData, {
+      //   headers: {
+      //     'Content-Type': 'multipart/form-data',
+      //     Authorization: `Token ${session?.user?.djangoAccess}`
+      //   }
+      // })
+
+      // For demo purposes, we'll just use a placeholder
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        setProfileImage(event.target?.result as string)
+        addToast({ title: 'Profile image updated', description: 'Your profile picture has been updated successfully', variant: 'solid', color: 'success' })
+      }
+      reader.readAsDataURL(file)
+    } catch (error) {
+      addToast({ title: 'Upload failed', description: 'Failed to upload profile image', variant: 'solid', color: 'danger' })
+    } finally {
+      setIsUploading(false)
+    }
+  }
 
   const statCards = [
     {
@@ -134,6 +179,84 @@ export default function OverviewPage() {
 
       {/* Two column grid */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Profile Section */}
+        <div className="lg:col-span-2 rounded-2xl bg-white p-6" style={{ border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
+          <div className="mb-6">
+            <h3 className="text-lg font-bold text-gray-900">Profile</h3>
+            <p className="text-sm text-gray-500">Manage your account settings</p>
+          </div>
+
+          <div className="space-y-6">
+            {/* Profile Image */}
+            <div className="flex flex-col items-center gap-4">
+              <div className="relative">
+                <Avatar
+                  src={profileImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${session?.user?.name}`}
+                  size="lg"
+                  className="w-24 h-24"
+                />
+                <label
+                  htmlFor="profile-image-upload"
+                  className="absolute bottom-0 right-0 bg-white rounded-full p-1.5 shadow-md cursor-pointer hover:bg-gray-50 transition-colors"
+                >
+                  <Camera size={16} className="text-gray-600" />
+                  <input
+                    id="profile-image-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleProfileImageUpload}
+                    disabled={isUploading}
+                  />
+                </label>
+              </div>
+              <div className="text-center">
+                <h4 className="font-semibold text-gray-800">{session?.user?.name}</h4>
+                <p className="text-sm text-gray-500">{session?.user?.email}</p>
+              </div>
+            </div>
+
+            {/* Profile Actions */}
+            <div className="space-y-3">
+              <Link
+                href="/dashboard/settings"
+                className="flex items-center gap-4 p-4 rounded-xl transition-all duration-200 hover:-translate-y-0.5"
+                style={{
+                  background: 'rgba(99,102,241,0.06)',
+                  border: '1px solid rgba(99,102,241,0.2)',
+                }}
+              >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
+                  <Settings size={18} className="text-white" />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-800 text-sm">Account Settings</p>
+                  <p className="text-xs text-gray-500">Update your profile information</p>
+                </div>
+                <ChevronRight size={16} className="ml-auto text-indigo-400" />
+              </Link>
+
+              <Link
+                href="/dashboard/payouts"
+                className="flex items-center gap-4 p-4 rounded-xl transition-all duration-200 hover:-translate-y-0.5"
+                style={{
+                  background: 'rgba(59,130,246,0.06)',
+                  border: '1px solid rgba(59,130,246,0.2)',
+                }}
+              >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)' }}>
+                  <DollarSign size={18} className="text-white" />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-800 text-sm">Payouts</p>
+                  <p className="text-xs text-gray-500">View your earnings and payout history</p>
+                </div>
+                <ChevronRight size={16} className="ml-auto text-blue-400" />
+              </Link>
+            </div>
+          </div>
+        </div>
+
         {/* Recent Reservations */}
         <div className="lg:col-span-3 rounded-2xl bg-white p-6" style={{ border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
           <div className="flex items-center justify-between mb-6">
@@ -181,90 +304,6 @@ export default function OverviewPage() {
                 </div>
               ))
             )}
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="lg:col-span-2 rounded-2xl bg-white p-6" style={{ border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
-          <div className="mb-6">
-            <h3 className="text-lg font-bold text-gray-900">Quick Actions</h3>
-            <p className="text-sm text-gray-500">Get things done fast</p>
-          </div>
-
-          <div className="space-y-3">
-            <Link
-              href="/dashboard/create"
-              className="flex items-center gap-4 p-4 rounded-xl transition-all duration-200 hover:-translate-y-0.5 group"
-              style={{
-                background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.06))',
-                border: '1px solid rgba(99,102,241,0.2)',
-              }}
-            >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
-                <Plus size={18} className="text-white" />
-              </div>
-              <div>
-                <p className="font-semibold text-gray-800 text-sm">Add New Property</p>
-                <p className="text-xs text-gray-500">List a property for rent</p>
-              </div>
-              <ChevronRight size={16} className="ml-auto text-indigo-400" />
-            </Link>
-
-            <Link
-              href="/dashboard/properties"
-              className="flex items-center gap-4 p-4 rounded-xl transition-all duration-200 hover:-translate-y-0.5"
-              style={{
-                background: 'rgba(16,185,129,0.06)',
-                border: '1px solid rgba(16,185,129,0.2)',
-              }}
-            >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>
-                <Building2 size={18} className="text-white" />
-              </div>
-              <div>
-                <p className="font-semibold text-gray-800 text-sm">Manage Properties</p>
-                <p className="text-xs text-gray-500">View and edit listings</p>
-              </div>
-              <ChevronRight size={16} className="ml-auto text-emerald-400" />
-            </Link>
-
-            <Link
-              href="/dashboard/reservations"
-              className="flex items-center gap-4 p-4 rounded-xl transition-all duration-200 hover:-translate-y-0.5"
-              style={{
-                background: 'rgba(245,158,11,0.06)',
-                border: '1px solid rgba(245,158,11,0.2)',
-              }}
-            >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #f59e0b, #f97316)' }}>
-                <Calendar size={18} className="text-white" />
-              </div>
-              <div>
-                <p className="font-semibold text-gray-800 text-sm">Reservations</p>
-                <p className="text-xs text-gray-500">
-                  {pendingReservations > 0 ? `${pendingReservations} pending review` : 'No pending requests'}
-                </p>
-              </div>
-              <ChevronRight size={16} className="ml-auto text-amber-400" />
-            </Link>
-
-            <Link
-              href="/listings"
-              className="flex items-center gap-4 p-4 rounded-xl transition-all duration-200 hover:-translate-y-0.5"
-              style={{
-                background: 'rgba(59,130,246,0.06)',
-                border: '1px solid rgba(59,130,246,0.2)',
-              }}
-            >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)' }}>
-                <Home size={18} className="text-white" />
-              </div>
-              <div>
-                <p className="font-semibold text-gray-800 text-sm">Public Listings</p>
-                <p className="text-xs text-gray-500">View your live listings</p>
-              </div>
-              <ChevronRight size={16} className="ml-auto text-blue-400" />
-            </Link>
           </div>
         </div>
       </div>

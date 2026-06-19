@@ -37,12 +37,14 @@ export const buildFilterParams = (filters: FilterState): Record<string, any> => 
     params['price__lte'] = filters.maxPrice
   }
 
-  // Amenities filter - if amenities are selected
-  if (filters.amenities && filters.amenities.length > 0) {
-    // For django-filter, amenities can be passed as array or comma-separated
-    // Adjust based on your Django API implementation
-    params.amenities__id__in = filters.amenities.join(',')
-  }
+// Amenities filter - if amenities are selected
+if (filters.amenities && filters.amenities.length > 0) {
+  // For django-filter, amenities can be passed as array or comma-separated
+  // Adjust based on your Django API implementation
+  params.amenities__id__in = filters.amenities.join(',')
+  // Add distinct parameter to ensure unique results
+  params.distinct = 'true'
+}
 
   return params
 }

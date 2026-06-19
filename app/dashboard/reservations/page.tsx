@@ -137,7 +137,7 @@ function ReservationCard({
             </div>
             <div className="text-center p-2 rounded-xl" style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.12)' }}>
               <DollarSign size={13} className="mx-auto mb-1" style={{ color: '#10b981' }} />
-              <p className="text-xs font-semibold text-gray-700">${reservation.total_price}</p>
+              <p className="text-xs font-semibold text-gray-700">D{reservation.total_price}</p>
               <p className="text-xs text-gray-400">Total</p>
             </div>
           </div>

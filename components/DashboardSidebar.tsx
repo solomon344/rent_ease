@@ -13,6 +13,7 @@ import {
   Bell,
   ChevronRight,
   Building2,
+  DollarSign,
   Sparkles,
 } from 'lucide-react'
 import Logo, { LogoIcon } from './Logo'
@@ -44,6 +45,13 @@ const sidebarItems = [
     label: 'Analytics',
     icon: BarChart3,
     href: '/dashboard/analytics',
+    badge: null,
+  },
+  {
+    id: 'payouts',
+    label: 'Payouts',
+    icon: DollarSign,
+    href: '/dashboard/payouts',
     badge: null,
   },
 ]

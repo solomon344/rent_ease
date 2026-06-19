@@ -42,14 +42,15 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   }
 
   return (
-    <div
-      className="rounded-2xl p-6 flex flex-col gap-6 h-fit sticky top-4"
-      style={{
-        background: '#fff',
-        border: '1px solid #e2e8f0',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-      }}
-    >
+<div
+  className="rounded-2xl p-8 flex flex-col gap-6 h-fit sticky top-4"
+  style={{
+    background: '#fff',
+    border: '1px solid #e2e8f0',
+    boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
+    minWidth: '300px'
+  }}
+>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">

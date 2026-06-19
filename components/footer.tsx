@@ -88,8 +88,8 @@ const Footer = () => {
               links: [
                 { label: "Our Story", href: "#" },
                 { label: "Help Center", href: "#" },
-                { label: "Terms of Service", href: "#" },
-                { label: "Privacy Policy", href: "#" }
+                { label: "Terms of Service", href: "/terms-of-service" },
+                { label: "Privacy Policy", href: "/privacy-policy" }
               ]
             }
           ].map((group, i) => (

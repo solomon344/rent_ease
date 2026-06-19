@@ -21,10 +21,13 @@ import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import Logo from "./Logo";
 
+import { Shield, FileText } from 'lucide-react';
+
 const nav_items = [
   { name: "Home", href: "/", icon: HomeIcon },
   { name: "Properties", href: "/listings", icon: Building2 },
   { name: "About", href: "/about", icon: Info },
+  { name: "Contact", href: "/contact", icon: Phone },
 ];
 
 const Navbar = () => {
@@ -63,7 +66,7 @@ const Navbar = () => {
       >
         <div className="flex items-center gap-2">
           <Phone size={12} className="text-white/80" />
-          <span className="text-xs text-white/90 font-medium">+220 000 000</span>
+          <span className="text-xs text-white/90 font-medium">+220 269 4194</span>
         </div>
         <div className="flex items-center gap-1.5">
           <Sparkles size={12} className="text-yellow-300" />

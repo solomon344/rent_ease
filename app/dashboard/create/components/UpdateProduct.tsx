@@ -333,7 +333,7 @@ const UpdateProperty = ({ amenities, property }: { amenities: any[]; property: a
                   </div>
 
                   <Input
-                    label="Price per Night (USD)"
+                    label="Price per Night (GMD)"
                     type="number"
                     labelPlacement="outside"
                     radius="lg"
@@ -341,7 +341,7 @@ const UpdateProperty = ({ amenities, property }: { amenities: any[]; property: a
                     value={formData.price.toString()}
                     onValueChange={v => handleInputChange('price', v)}
                     isRequired
-                    startContent={<span className="text-gray-400">$</span>}
+                    startContent={<span className="text-gray-400">D</span>}
                     classNames={{ label: 'font-bold text-gray-700 mb-2', inputWrapper: 'bg-gray-50' }}
                   />
 
