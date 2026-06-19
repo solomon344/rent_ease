@@ -21,7 +21,8 @@ import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import Logo from "./Logo";
 
-import { Shield, FileText } from 'lucide-react';
+import type {CustomSession} from "@/types";
+import { Avatar } from "@heroui/avatar";
 
 const nav_items = [
   { name: "Home", href: "/", icon: HomeIcon },
@@ -31,7 +32,7 @@ const nav_items = [
 ];
 
 const Navbar = () => {
-  const { data: session } = useSession();
+  const { data: session }:{data: CustomSession | null} = useSession();
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
   const [userMenuOpen, setUserMenuOpen] = React.useState(false);
@@ -154,14 +155,20 @@ const Navbar = () => {
                       onClick={() => setUserMenuOpen(!userMenuOpen)}
                       className="flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all duration-200 hover:bg-gray-100"
                     >
-                      <div
+                      {/* <div
                         className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
                         style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}
                       >
                         {session.user?.name?.[0]?.toUpperCase() ||
                           session.user?.email?.[0]?.toUpperCase() ||
                           "U"}
-                      </div>
+                      </div> */}
+                      <Avatar
+                        src={session.user?.image||'S'}
+                        alt={session.user?.name||""}
+                        size="sm"
+                        className="text-gray-400"
+                      />
                       <span className="text-sm font-medium text-gray-700 max-w-[100px] truncate">
                         {session.user?.name?.split(" ")[0] || session.user?.email?.split("@")[0]}
                       </span>
@@ -182,6 +189,14 @@ const Navbar = () => {
                           <p className="text-xs text-gray-400 truncate">{session.user?.email}</p>
                         </div>
                         <div className="p-2">
+                          <Link
+                            href="/profile"
+                            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm hover:bg-indigo-50 transition-colors"
+                            style={{ color: "#374151" }}
+                            onClick={() => setUserMenuOpen(false)}
+                          >
+                            <User size={15} className="text-gray-400" /> Profile
+                          </Link>
                           <Link
                             href="/bookings"
                             className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm hover:bg-indigo-50 transition-colors"
@@ -303,6 +318,17 @@ const Navbar = () => {
 
                 {session?.user ? (
                   <>
+                    <Link href="/profile" onClick={() => setMobileOpen(false)}>
+                      <Button
+                        size="sm"
+                        variant="flat"
+                        className="w-full font-medium mb-2"
+                        style={{ color: "#374151", background: "rgba(0,0,0,0.04)" }}
+                        startContent={<User size={15} />}
+                      >
+                        Profile
+                      </Button>
+                    </Link>
                     <Link href="/bookings" onClick={() => setMobileOpen(false)}>
                       <Button
                         size="sm"
@@ -354,7 +380,7 @@ const Navbar = () => {
                 )}
               </div>
             </div>
-       
+
         )}
       </header>
     </>

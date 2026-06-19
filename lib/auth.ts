@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google"
 import Api from "./api"
 import { isAxiosError } from "axios"
+import { image } from "@heroui/theme"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -33,8 +34,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             //   config.headers.Authorization = `Token ${access}`;
             //   return config;
             // })
-
-            return { djangoAccess: access, djangoRefresh: refresh, email: profile.user.email, name: profile.user.first_name + ' ' + profile.user.last_name, role: profile.role, phone: profile.phone }
+            console.log("user image", profile.picture)
+            console.log("profile", profile)
+            return { djangoAccess: access, djangoRefresh: refresh, email: profile.user.email, name: profile.user.first_name + ' ' + profile.user.last_name, role: profile.role, phone: profile.phone, image: profile.picture}
           } else {
             // If you return null here then auth.js will default to a bad request response
             return null
@@ -81,6 +83,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             if (res.ok && data?.access) {
               token.user = {
                 ...currentUser,
+                image: data?.user?.image,
                 idToken,
                 accessToken: account.access_token,
                 djangoAccess: data.access,
@@ -105,7 +108,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           }
         } else {
           if (account.access_token) token.user = { ...currentUser, accessToken: account.access_token }
-          if (idToken) token.user = { ...currentUser, idToken }
+          else if (idToken) token.user = { ...currentUser, idToken }
+          
         }
       }
 
@@ -149,6 +153,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       } catch (e) {
         session.user = null
       }
+
+      console.log(session.user)
 
       return session
     },
